@@ -38,10 +38,20 @@ AddEventHandler("esx_garages:openVehicleMenu", function(data)
             },
             {
                 title = "Take out vehicle",
-                serverEvent = "esx_garages:spawnVehicle",
-                args = data,
                 arrow = canTakeoutVehicle,
-                disabled = not canTakeoutVehicle
+                disabled = not canTakeoutVehicle,
+                onSelect = function()
+                    for i = 1, #Config.Garages[data.garageKey].Spawns do
+                        local spawnPoint = Config.Garages[data.garageKey].Spawns[i]
+
+                        if ESX.Game.IsSpawnPointClear(vector3(spawnPoint.x, spawnPoint.y, spawnPoint.z), 1.0) then
+                            data.spawnIndex = i
+                            return TriggerServerEvent("esx_garages:takeOutOwnedVehicle", data)
+                        end
+                    end
+
+                    ESX.ShowNotification("None of the spawn points are clear at the moment!")
+                end
             },
         }
     })
