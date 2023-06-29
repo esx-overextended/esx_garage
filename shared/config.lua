@@ -4,11 +4,12 @@ Config.Debug = true
 
 Config.DefaultPed = `s_m_y_airworker`
 
+Config.TransferPrice = 1000
+
 Config.RestoreVehicles = true
 
 Config.Garages = {
-    {
-        Name = "legion",
+    ["legion"] = {
         Label = "Legion Garage",
         Type = "car",
         Groups = {},

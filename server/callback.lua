@@ -1,12 +1,12 @@
-lib.callback.register("esx_garages:getOwnedVehicles", function(source, garageIndex)
+lib.callback.register("esx_garages:getOwnedVehicles", function(source, garageKey)
     local xPlayer = ESX.GetPlayerFromId(source)
 
     if not xPlayer then return end
 
-    if not IsPlayerInGarageZone(source, garageIndex) then return --[[Player is cheating...]] end
+    if not IsPlayerInGarageZone(source, garageKey) then return --[[Player is cheating...]] end
 
     local vehicles, vehiclesCount = {}, 0
-    local currentGarage = Config.Garages[garageIndex]
+    local currentGarage = Config.Garages[garageKey]
     local contextOptions = {}
 
     local dbResults = MySQL.rawExecute.await("SELECT `id`, `plate`, `vehicle`, `model`, `stored`, `garage` FROM `owned_vehicles` WHERE `owner` = ? AND `type` = ? AND `job` IS NULL", { xPlayer.getIdentifier(), currentGarage.Type })
@@ -36,35 +36,37 @@ lib.callback.register("esx_garages:getOwnedVehicles", function(source, garageInd
         }
 
         local modelData = ESX.GetVehicleData(dbResult.model)
-        local vehicleGarageStatus
-
-        if not dbResult.garage then
-            vehicleGarageStatus = "Out"
-        elseif dbResult.garage == currentGarage.Name then
-            vehicleGarageStatus = "Stored Here"
-        elseif dbResult.garage ~= currentGarage.Name then
-            for j = 1, #Config.Garages do
-                if Config.Garages[j].Name == dbResult.garage then
-                    vehicleGarageStatus = ("Stored in %s"):format(Config.Garages[j].Label)
-                    break
-                end
-            end
-        end
+        local vehicleName = ("%s %s"):format(modelData.make, modelData.name)
 
         contextOptions[vehiclesCount] = {
-            title = ("%s %s"):format(modelData.make, modelData.name),
-            event = vehicles[vehiclesCount].stored and "TODO" or nil,
+            title = vehicleName,
             arrow = vehicles[vehiclesCount].stored,
+            event = vehicles[vehiclesCount].stored and "esx_garages:openVehicleMenu",
+            args = { vehicleName = vehicleName, vehicleId = dbResult.id, plate = dbResult.plate, storedGarage = dbResult.garage, garageKey = garageKey },
             metadata = {
                 ["Plate"] = dbResult.vehicle?.plate or dbResult.plate,
-                ["Status"] = vehicleGarageStatus
+                ["Status"] = vehicles[vehiclesCount].stored and ("Stored in %s"):format(dbResult.garage == garageKey and "Here" or Config.Garages[dbResult.garage]?.Label) or "Out"
             }
         }
 
         ::skipLoop::
     end
 
-    print(ESX.DumpTable(contextOptions))
+    -- print(ESX.DumpTable(contextOptions))
 
     return vehicles, contextOptions
+end)
+
+lib.callback.register("esx_garages:transferVehicle", function(source, data)
+    local xPlayer = ESX.GetPlayerFromId(source)
+
+    if not xPlayer or type(data) ~= "table" then return end
+
+    if not IsPlayerInGarageZone(source, data.garageKey) then return --[[Player is cheating...]] end
+
+    if xPlayer.getMoney() < Config.TransferPrice then return xPlayer.showNotification(("You don't have $%s money in your pocket!"):format(Config.TransferPrice), "error") end
+
+    xPlayer.removeMoney(Config.TransferPrice, ("Transferring of %s vehicle (%s) to %s"):format(data.vehicleName, data.plate, Config.Garages[data.garageKey].Label))
+
+    return MySQL.update.await("UPDATE `owned_vehicles` SET `garage` = ? WHERE `id` = ? AND `owner` = ?", { data.garageKey, data.vehicleId, xPlayer.getIdentifier() })
 end)

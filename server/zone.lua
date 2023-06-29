@@ -1,14 +1,14 @@
 local garageZones = {}
 
-local function setupGarage(garageIndex)
-    local garageData = Config.Garages[garageIndex]
+local function setupGarage(garageKey)
+    local garageData = Config.Garages[garageKey]
     local polyZone = lib.zones.poly({
         points = garageData.Points,
         thickness = garageData.Thickness or 4,
         onEnter = onGarageZoneEnter,
         onExit = onGarageZoneExit
     })
-    garageZones[garageIndex] = polyZone
+    garageZones[garageKey] = polyZone
 end
 
 local function initialize()
@@ -16,9 +16,8 @@ local function initialize()
     hasInitialized = true
 
     SetTimeout(1000, function()
-        print(("^7[^2%s^7] HAS LOADED ^5%s^7 GARAGE DATA(S)"):format(lib.context:upper(), #Config.Garages))
-        for index = 1, #Config.Garages do
-            setupGarage(index)
+        for key in pairs(Config.Garages) do
+            setupGarage(key)
         end
     end)
 end
@@ -27,13 +26,13 @@ do initialize() end
 
 
 ---@param source number
----@param garageIndex number
+---@param garageKey string
 ---@return boolean
-function IsPlayerInGarageZone(source, garageIndex)
+function IsPlayerInGarageZone(source, garageKey)
     source = tonumber(source) --[[@as number]]
-    garageIndex = tonumber(garageIndex) --[[@as number]]
+    garageKey = tostring(garageKey) --[[@as string]]
 
-    if not source or not garageIndex or not garageZones[garageIndex] then return false end
+    if not source or not garageKey or not garageZones[garageKey] then return false end
 
-    return garageZones[garageIndex]:contains(GetEntityCoords(GetPlayerPed(source)))
+    return garageZones[garageKey]:contains(GetEntityCoords(GetPlayerPed(source)))
 end

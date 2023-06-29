@@ -2,17 +2,17 @@ local zone, garageZones, hasInitialized = {}, {}, false
 
 function zone.configureVehicle(action, data)
     if action == "enter" then
-        garageZones[data.id].vehicleTargetId = Target.addVehicle()
+        garageZones[data.garageKey].vehicleTargetId = Target.addVehicle()
     elseif action == "exit" then
-        local vehicleTargetId = garageZones[data.id].vehicleTargetId
-        garageZones[data.id].vehicleTargetId = nil
+        local vehicleTargetId = garageZones[data.garageKey].vehicleTargetId
+        garageZones[data.garageKey].vehicleTargetId = nil
 
         Target.removeVehicle(vehicleTargetId)
     end
 end
 
 function zone.configurePed(action, data)
-    local garageData = Config.Garages[data.garageIndex]
+    local garageData = Config.Garages[data.garageKey]
 
     if action == "enter" then
         for i = 1, #garageData.Peds do
@@ -32,22 +32,22 @@ function zone.configurePed(action, data)
             SetEntityInvincible(pedEntity, true)
             SetPedCanPlayAmbientAnims(pedEntity, false)
 
-            if not garageZones[data.id].pedEntities then garageZones[data.id].pedEntities = {} end
+            if not garageZones[data.garageKey].pedEntities then garageZones[data.garageKey].pedEntities = {} end
 
-            garageZones[data.id].pedEntities[#garageZones[data.id].pedEntities + 1] = pedEntity
+            garageZones[data.garageKey].pedEntities[#garageZones[data.garageKey].pedEntities + 1] = pedEntity
         end
 
-        garageZones[data.id].pedTargetId = Target.addPed(garageZones[data.id].pedEntities, data.garageIndex)
+        garageZones[data.garageKey].pedTargetId = Target.addPed(garageZones[data.garageKey].pedEntities, data.garageKey)
     elseif action == "exit" then
-        local pedEntities = garageZones[data.id].pedEntities
-        garageZones[data.id].pedEntities = nil
+        local pedEntities = garageZones[data.garageKey].pedEntities
+        garageZones[data.garageKey].pedEntities = nil
 
         for i = 1, #pedEntities do
             DeletePed(pedEntities[i])
         end
 
-        local pedTargetId = garageZones[data.id].pedTargetId
-        garageZones[data.id].pedTargetId = nil
+        local pedTargetId = garageZones[data.garageKey].pedTargetId
+        garageZones[data.garageKey].pedTargetId = nil
 
         Target.removePed(pedEntities, pedTargetId)
     end
@@ -60,38 +60,39 @@ local function configureZone(action, data)
 end
 
 local function onGarageZoneEnter(data)
-    if garageZones[data.id].inRange then return end
+    if garageZones[data.garageKey].inRange then return end
 
-    garageZones[data.id].inRange = true
+    garageZones[data.garageKey].inRange = true
 
-    if Config.Debug then print("entered garage zone ", data.id) end
+    if Config.Debug then print("entered garage zone ", data.garageKey) end
 
     configureZone("enter", data)
     collectgarbage("collect")
 end
 
 local function onGarageZoneExit(data)
-    if not garageZones[data.id].inRange then return end
+    if not garageZones[data.garageKey].inRange then return end
 
-    garageZones[data.id].inRange = false
+    garageZones[data.garageKey].inRange = false
 
-    if Config.Debug then print("exited garage zone ", data.id) end
+    if Config.Debug then print("exited garage zone ", data.garageKey) end
 
     configureZone("exit", data)
     collectgarbage("collect")
 end
 
-local function setupGarage(garageIndex)
-    local garageData = Config.Garages[garageIndex]
+local function setupGarage(garageKey)
+    local garageData = Config.Garages[garageKey]
     local polyZone = lib.zones.poly({
         points = garageData.Points,
         thickness = garageData.Thickness or 4,
         debug = Config.Debug,
         onEnter = onGarageZoneEnter,
         onExit = onGarageZoneExit,
-        garageIndex = garageIndex
+        garageKey = garageKey
     })
-    garageZones[polyZone.id] = { inRange = false, pedEntities = nil }
+    garageZones[garageKey] = { polyZone = polyZone, inRange = false, pedEntities = nil }
+
     -- createBlip(garageData)
 end
 
@@ -100,11 +101,20 @@ local function initialize()
     hasInitialized = true
 
     SetTimeout(1000, function()
-        print(("^7[^2%s^7] HAS LOADED ^5%s^7 GARAGE DATA(S)"):format(lib.context:upper(), #Config.Garages))
-        for index = 1, #Config.Garages do
-            setupGarage(index)
+        for key in pairs(Config.Garages) do
+            setupGarage(key)
         end
     end)
 end
 
 do initialize() end
+
+---@param garageKey string
+---@return boolean
+function IsPlayerInGarageZone(garageKey)
+    garageKey = tostring(garageKey) --[[@as string]]
+
+    if not garageKey or not garageZones[garageKey] then return false end
+
+    return garageZones[garageKey].polyZone:contains(cache.coords)
+end

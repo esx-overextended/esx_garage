@@ -20,7 +20,7 @@ function Target.removeVehicle(data)
     return exports["ox_target"]:removeGlobalVehicle(data)
 end
 
-function Target.addPed(entity, garageIndex)
+function Target.addPed(entity, garageKey)
     local optionId = ("%s:open_garage"):format(cache.resource)
 
     exports["ox_target"]:addLocalEntity(entity, {
@@ -30,7 +30,7 @@ function Target.addPed(entity, garageIndex)
             icon = "fa-solid fa-warehouse",
             event = "esx_garages:openGarageMenu",
             distance = 3,
-            garageIndex = garageIndex
+            garageKey = garageKey
         }
     })
 
