@@ -1,5 +1,16 @@
 local zone, garageZones, hasInitialized = {}, {}, false
 
+function zone.configureVehicle(action, data)
+    if action == "enter" then
+        garageZones[data.id].vehicleTargetId = Target.addVehicle()
+    elseif action == "exit" then
+        local vehicleTargetId = garageZones[data.id].vehicleTargetId
+        garageZones[data.id].vehicleTargetId = nil
+
+        Target.removeVehicle(vehicleTargetId)
+    end
+end
+
 function zone.configurePed(action, data)
     local garageData = Config.Garages[data.garageIndex]
 
@@ -25,6 +36,8 @@ function zone.configurePed(action, data)
 
             garageZones[data.id].pedEntities[#garageZones[data.id].pedEntities + 1] = pedEntity
         end
+
+        garageZones[data.id].pedTargetId = Target.addPed(garageZones[data.id].pedEntities)
     elseif action == "exit" then
         local pedEntities = garageZones[data.id].pedEntities
         garageZones[data.id].pedEntities = nil
@@ -32,6 +45,11 @@ function zone.configurePed(action, data)
         for i = 1, #pedEntities do
             DeletePed(pedEntities[i])
         end
+
+        local pedTargetId = garageZones[data.id].pedTargetId
+        garageZones[data.id].pedTargetId = nil
+
+        Target.removePed(pedEntities, pedTargetId)
     end
 end
 
@@ -49,7 +67,6 @@ local function onGarageZoneEnter(data)
     if Config.Debug then print("entered garage zone ", data.id) end
 
     configureZone("enter", data)
-
     collectgarbage("collect")
 end
 
@@ -61,7 +78,6 @@ local function onGarageZoneExit(data)
     if Config.Debug then print("exited garage zone ", data.id) end
 
     configureZone("exit", data)
-
     collectgarbage("collect")
 end
 
@@ -75,7 +91,7 @@ local function setupGarage(garageIndex)
         onExit = onGarageZoneExit,
         garageIndex = garageIndex
     })
-    garageZones[polyZone.id] = { inRange = false }
+    garageZones[polyZone.id] = { inRange = false, pedEntities = nil }
     -- createBlip(garageData)
 end
 
@@ -84,7 +100,7 @@ local function initialize()
     hasInitialized = true
 
     SetTimeout(1000, function()
-        print(("^7[^2%s^7] HAS LOADED ^5%s^7 DATA(S)"):format(lib.context:upper(), #Config.Garages))
+        print(("^7[^2%s^7] HAS LOADED ^5%s^7 GARAGE DATA(S)"):format(lib.context:upper(), #Config.Garages))
         for index = 1, #Config.Garages do
             setupGarage(index)
         end
