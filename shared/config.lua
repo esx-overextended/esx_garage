@@ -4,10 +4,14 @@ Config.Debug = true
 
 Config.DefaultPed = `s_m_y_airworker`
 
+Config.RestoreVehicles = true
+
 Config.Garages = {
     {
+        Name = "legion",
         Label = "Legion Garage",
         Type = "car",
+        Groups = {},
         Peds = {
             { Model = nil, Coords = vector4(213.6, -809.6, 30.0, 340.1) },
             { Model = nil, Coords = vector4(225.4, -740.5, 33.2, 263.6) }

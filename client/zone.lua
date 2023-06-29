@@ -37,7 +37,7 @@ function zone.configurePed(action, data)
             garageZones[data.id].pedEntities[#garageZones[data.id].pedEntities + 1] = pedEntity
         end
 
-        garageZones[data.id].pedTargetId = Target.addPed(garageZones[data.id].pedEntities)
+        garageZones[data.id].pedTargetId = Target.addPed(garageZones[data.id].pedEntities, data.garageIndex)
     elseif action == "exit" then
         local pedEntities = garageZones[data.id].pedEntities
         garageZones[data.id].pedEntities = nil
