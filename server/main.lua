@@ -5,16 +5,20 @@ local sql = {
         ADD COLUMN IF NOT EXISTS `last_garage` VARCHAR(60) DEFAULT 'legion'
     ]],
 
-    "DROP TRIGGER IF EXISTS `update_owned_vehicles_garage`",
+    "DROP TRIGGER IF EXISTS `update_owned_vehicles_garage_and_last_garage`",
     [[
-        CREATE TRIGGER `update_owned_vehicles_garage`
+        CREATE TRIGGER `update_owned_vehicles_garage_and_last_garage`
         BEFORE UPDATE ON `owned_vehicles` FOR EACH ROW
         BEGIN
             IF NEW.stored = 0 OR NEW.stored IS NULL THEN
                 SET NEW.garage = NULL;
             END IF;
+
+            IF NEW.garage IS NOT NULL THEN
+                SET NEW.last_garage = NEW.garage;
+            END IF;
         END
-    ]]
+    ]],
 }
 
 MySQL.ready(function()

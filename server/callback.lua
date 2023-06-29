@@ -3,7 +3,7 @@ lib.callback.register("esx_garages:getOwnedVehicles", function(source, garageKey
 
     if not xPlayer then return end
 
-    if not IsPlayerInGarageZone(source, garageKey) then return --[[Player is cheating...]] end
+    if not IsPlayerInGarageZone(xPlayer.source, garageKey) then return --[[Player is cheating...]] end
 
     local vehicles, vehiclesCount = {}, 0
     local currentGarage = Config.Garages[garageKey]
@@ -62,7 +62,7 @@ lib.callback.register("esx_garages:transferVehicle", function(source, data)
 
     if not xPlayer or type(data) ~= "table" then return end
 
-    if not IsPlayerInGarageZone(source, data.garageKey) then return --[[Player is cheating...]] end
+    if not IsPlayerInGarageZone(xPlayer.source, data.garageKey) then return --[[Player is cheating...]] end
 
     if xPlayer.getMoney() < Config.TransferPrice then return xPlayer.showNotification(("You don't have $%s money in your pocket!"):format(Config.TransferPrice), "error") end
 

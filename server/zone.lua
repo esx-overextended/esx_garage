@@ -36,3 +36,15 @@ function IsPlayerInGarageZone(source, garageKey)
 
     return garageZones[garageKey]:contains(GetEntityCoords(GetPlayerPed(source)))
 end
+
+---@param coords vector3
+---@param garageKey string
+---@return boolean
+function IsCoordsInGarageZone(coords, garageKey)
+    coords = vector3(coords.x, coords.y, coords.z)
+    garageKey = tostring(garageKey) --[[@as string]]
+
+    if not coords or not garageKey or not garageZones[garageKey] then return false end
+
+    return garageZones[garageKey]:contains(coords)
+end

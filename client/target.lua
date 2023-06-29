@@ -1,6 +1,6 @@
 Target = {}
 
-function Target.addVehicle()
+function Target.addVehicle(garageKey)
     local optionId = ("%s:store_vehicle"):format(cache.resource)
 
     exports["ox_target"]:addGlobalVehicle({
@@ -8,8 +8,9 @@ function Target.addVehicle()
             name = optionId,
             label = "Store Vehicle",
             icon = "fa-solid fa-parking",
-            event = "esx_garages:storeVehicle",
-            distance = 3
+            serverEvent = "esx_garages:storeOwnedVehicle",
+            distance = 3,
+            garageKey = garageKey
         }
     })
 

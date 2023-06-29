@@ -1,7 +1,3 @@
-AddEventHandler("esx_garages:storeVehicle", function(target)
-
-end)
-
 AddEventHandler("esx_garages:openGarageMenu", function(data)
     if not IsPlayerInGarageZone(data?.garageKey) then return end
 

@@ -2,7 +2,7 @@ local zone, garageZones, hasInitialized = {}, {}, false
 
 function zone.configureVehicle(action, data)
     if action == "enter" then
-        garageZones[data.garageKey].vehicleTargetId = Target.addVehicle()
+        garageZones[data.garageKey].vehicleTargetId = Target.addVehicle(data.garageKey)
     elseif action == "exit" then
         local vehicleTargetId = garageZones[data.garageKey].vehicleTargetId
         garageZones[data.garageKey].vehicleTargetId = nil
