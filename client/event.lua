@@ -37,11 +37,22 @@ AddEventHandler("esx_garages:openVehicleMenu", function(data)
                 arrow = canTakeoutVehicle,
                 disabled = not canTakeoutVehicle,
                 onSelect = function()
+                    local spawnPoints = {}
+
                     for i = 1, #Config.Garages[data.garageKey].Spawns do
                         local spawnPoint = Config.Garages[data.garageKey].Spawns[i]
+                        spawnPoints[i] = { x = spawnPoint.z, y = spawnPoint.y, z = spawnPoint.z, index = i}
+                    end
+
+                    table.sort(spawnPoints, function(a, b)
+                        return #(vector3(a.x, a.y, a.z) - cache.coords) < #(vector3(b.x, b.y, b.z) - cache.coords)
+                    end)
+
+                    for i = 1, #spawnPoints do
+                        local spawnPoint = spawnPoints[i]
 
                         if ESX.Game.IsSpawnPointClear(vector3(spawnPoint.x, spawnPoint.y, spawnPoint.z), 1.0) then
-                            data.spawnIndex = i
+                            data.spawnIndex = spawnPoint.index
                             return TriggerServerEvent("esx_garages:takeOutOwnedVehicle", data)
                         end
                     end
