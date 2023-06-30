@@ -65,3 +65,12 @@ AddEventHandler("esx_garages:openVehicleMenu", function(data)
 
     return lib.showContext("esx_garages:vehicleMenu")
 end)
+
+AddEventHandler("esx_garages:storeOwnedVehicle", function(data)
+    if not IsCoordsInGarageZone(GetEntityCoords(data?.entity), data?.garageKey) then return end
+
+    data.netId = NetworkGetNetworkIdFromEntity(data.entity)
+    data.properties = ESX.Game.GetVehicleProperties(data.entity)
+
+    TriggerServerEvent("esx_garages:storeOwnedVehicle", data)
+end)

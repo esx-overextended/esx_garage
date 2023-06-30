@@ -8,7 +8,7 @@ function Target.addVehicle(garageKey)
             name = optionId,
             label = "Store Vehicle",
             icon = "fa-solid fa-parking",
-            serverEvent = "esx_garages:storeOwnedVehicle",
+            event = "esx_garages:storeOwnedVehicle",
             distance = 3,
             garageKey = garageKey
         }

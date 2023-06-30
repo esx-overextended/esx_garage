@@ -21,11 +21,9 @@ local function registerRadialMenu(seatState)
             label = "Store Vehicle",
             icon = "fa-solid fa-parking",
             onSelect = function()
-                local vehicleNetId = NetworkGetNetworkIdFromEntity(cache.vehicle)
-
                 for garageKey in pairs(Config.Garages) do
                     if IsPlayerInGarageZone(garageKey) then
-                        TriggerServerEvent("esx_garages:storeOwnedVehicle", { entity = vehicleNetId, garageKey = garageKey })
+                        TriggerServerEvent("esx_garages:storeOwnedVehicle", { netId = NetworkGetNetworkIdFromEntity(cache.vehicle), garageKey = garageKey, properties = ESX.Game.GetVehicleProperties(cache.vehicle) })
                     end
                 end
             end
