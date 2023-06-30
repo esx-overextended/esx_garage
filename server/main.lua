@@ -19,6 +19,21 @@ local sql = {
             END IF;
         END
     ]],
+
+    [[
+        CREATE TABLE IF NOT EXISTS `impounded_vehicles` (
+            `id` INT NOT NULL,
+            `reason` LONGTEXT NULL,
+            `note` LONGTEXT NULL,
+            `release_fee` INT NULL,
+            `release_date` timestamp NOT NULL,
+            `impounded_by` VARCHAR(60) NULL,
+            `impounded_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+
+            UNIQUE INDEX `id` (`id`),
+            CONSTRAINT `FK_impounded_vehicles_owned_vehicles` FOREIGN KEY (`id`) REFERENCES `owned_vehicles` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
+        )
+    ]],
 }
 
 MySQL.ready(function()
