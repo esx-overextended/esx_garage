@@ -37,27 +37,29 @@ AddEventHandler("esx_garages:openVehicleMenu", function(data)
                 arrow = canTakeoutVehicle,
                 disabled = not canTakeoutVehicle,
                 onSelect = function()
-                    local spawnPoints = {}
+                    -- local spawnPoints = {}
 
-                    for i = 1, #Config.Garages[data.garageKey].Spawns do
-                        local spawnPoint = Config.Garages[data.garageKey].Spawns[i]
-                        spawnPoints[i] = { x = spawnPoint.z, y = spawnPoint.y, z = spawnPoint.z, index = i}
-                    end
+                    -- for i = 1, #Config.Garages[data.garageKey].Spawns do
+                    --     local spawnPoint = Config.Garages[data.garageKey].Spawns[i]
+                    --     spawnPoints[i] = { x = spawnPoint.z, y = spawnPoint.y, z = spawnPoint.z, index = i}
+                    -- end
 
-                    table.sort(spawnPoints, function(a, b)
-                        return #(vector3(a.x, a.y, a.z) - cache.coords) < #(vector3(b.x, b.y, b.z) - cache.coords)
-                    end)
+                    -- local coords = vector3(cache.coords.x, cache.coords.y, cache.coords.z)
 
-                    for i = 1, #spawnPoints do
-                        local spawnPoint = spawnPoints[i]
+                    -- table.sort(spawnPoints, function(a, b)
+                    --     return #(vector3(a.x, a.y, a.z) - coords) < #(vector3(b.x, b.y, b.z) - coords)
+                    -- end)
 
-                        if ESX.Game.IsSpawnPointClear(vector3(spawnPoint.x, spawnPoint.y, spawnPoint.z), 2.0) then
-                            data.spawnIndex = spawnPoint.index
-                            return TriggerServerEvent("esx_garages:takeOutOwnedVehicle", data)
-                        end
-                    end
+                    -- for i = 1, #spawnPoints do
+                    --     local spawnPoint = spawnPoints[i]
 
-                    ESX.ShowNotification("None of the spawn points are clear at the moment!")
+                    --     if IsCoordsAvailableToSpawn(spawnPoint) then
+                    --         data.spawnIndex = spawnPoint.index
+                    --         break
+                    --     end
+                    -- end
+
+                    TriggerServerEvent("esx_garages:takeOutOwnedVehicle", data)
                 end
             },
         }

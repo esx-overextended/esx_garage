@@ -38,6 +38,21 @@ function IsPlayerAuthorizedToAccessGarage(garageKey)
     return false
 end
 
+---@param coords vector3 | vector4 | table
+---@return boolean
+function IsCoordsAvailableToSpawn(coords, range) -- why this shit doesn't work?
+    coords = vector3(coords.x, coords.y, coords.z)
+    range = range or 3.0
+
+    -- return not IsAnyPedNearPoint(coords.x, coords.y, coords.z, range) and
+    --     not IsAnyVehicleNearPoint(coords.x, coords.y, coords.z, range) and
+    --     not IsAnyObjectNearPoint(coords.x, coords.y, coords.z, range, true)
+
+    -- return ESX.Game.IsSpawnPointClear(coords, range)
+
+    return #lib.getNearbyVehicles(coords, range, true) == 0
+end
+
 function OnPlayerData(key)
     if key ~= "job" and key ~= "groups" then return end
 

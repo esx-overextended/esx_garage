@@ -11,6 +11,32 @@ RegisterServerEvent("esx_garages:takeOutOwnedVehicle", function(data)
 
     local spawnCoords = Config.Garages[data.garageKey].Spawns[data.spawnIndex]
 
+    if not spawnCoords then
+        local spawnPoints = {}
+
+        for i = 1, #Config.Garages[data.garageKey].Spawns do
+            local spawnPoint = Config.Garages[data.garageKey].Spawns[i]
+            spawnPoints[i] = { x = spawnPoint.z, y = spawnPoint.y, z = spawnPoint.z, index = i}
+        end
+
+        local coords = GetEntityCoords(GetPlayerPed(xPlayer.source))
+
+        table.sort(spawnPoints, function(a, b)
+            return #(vector3(a.x, a.y, a.z) - coords) < #(vector3(b.x, b.y, b.z) - coords)
+        end)
+
+        for i = 1, #spawnPoints do
+            local spawnPoint = spawnPoints[i]
+
+            if IsCoordsAvailableToSpawn(spawnPoint) then
+                spawnCoords = Config.Garages[data.garageKey].Spawns[spawnPoint.index]
+                break
+            end
+        end
+    end
+
+    if not spawnCoords then return xPlayer.showNotification("None of the spawn points are clear at the moment!") end
+
     ESX.CreateVehicle(data.vehicleId, spawnCoords, spawnCoords.w)
 
     xPlayer.showNotification("Vehicle spawned", "success")

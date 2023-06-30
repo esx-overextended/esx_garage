@@ -95,6 +95,18 @@ function IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey)
     return false
 end
 
+---@param coords vector3 | vector4 | table
+---@param range? number
+---@return boolean
+function IsCoordsAvailableToSpawn(coords, range)
+    coords = vector3(coords.x, coords.y, coords.z)
+    range = range or 3.0
+
+    local _, _, vehiclesCount = ESX.OneSync.GetVehiclesInArea(coords, range)
+
+    return vehiclesCount == 0
+end
+
 ---@param source string | number
 function CheatDetected(source)
     print(("[^1CHEATING^7] Player (^5%s^7) with the identifier of (^5%s^7) is detected ^1cheating^7 through triggering events!"):format(source, GetPlayerIdentifierByType(source --[[@as string]], "license")))
