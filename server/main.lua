@@ -43,3 +43,36 @@ MySQL.ready(function()
         MySQL.update.await("UPDATE `owned_vehicles` SET `stored` = 1, `garage` = `last_garage` WHERE `stored` = 0 OR `stored` IS NULL")
     end
 end)
+
+---@class CImpoundData
+---@field entity number
+---@field reason? string
+---@field note? string
+---@field releaseFee? number
+---@field releaseDate? osdate
+---@field impoundedBy? string
+
+---Deletes the vehicle entity and impounds it with the specified data if it's an owned vehicle
+---@param data CImpoundData
+---@return boolean, string
+function ImpoundVehicle(data)
+    if type(data) ~= "table" or type(data?.entity) ~= "number" then return false, "invalid_data" end
+
+    if not DoesEntityExist(data.entity) then return false, "invalid_entity" end
+
+    local xVehicle = ESX.GetVehicle(data.entity)
+
+    if xVehicle and xVehicle.id then -- owned vehicle
+        local impounded_at = MySQL.scalar.await("SELECT `impounded_at` FROM `impounded_vehicles` WHERE `id` = ?", { xVehicle.id })
+
+        if impounded_at then return false, "already_impounded" end
+
+        MySQL.insert.await("INSERT INTO `impounded_vehicles` VALUES (?, ?, ?, ?, ?, ?)", { xVehicle.id, data.reason, data.note, data.releaseFee, data.releaseDate, data.impoundedBy })
+    end
+
+    ESX.DeleteVehicle(data.entity)
+
+    return true, "successful"
+end
+
+exports("ImpoundVehicle", ImpoundVehicle)
