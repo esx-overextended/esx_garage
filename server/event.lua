@@ -3,11 +3,11 @@ RegisterServerEvent("esx_garages:takeOutOwnedVehicle", function(data)
 
     if not xPlayer or type(data) ~= "table" then return end
 
-    if not IsPlayerInGarageZone(xPlayer.source, data.garageKey) then return --[[Player is cheating...]] end
+    if not IsPlayerInGarageZone(xPlayer.source, data.garageKey) or not IsPlayerAuthorizedToAccessGarage(xPlayer, data.garageKey) then return CheatDetected(xPlayer.source) end
 
     local vehicleData = MySQL.single.await("SELECT `owner`, `stored`, `garage` FROM `owned_vehicles` WHERE `id` = ?", { data.vehicleId })
 
-    if not vehicleData or vehicleData.owner ~= xPlayer.getIdentifier() or not vehicleData.stored or vehicleData.garage ~= data.garageKey then return --[[Player is cheating...]] end
+    if not vehicleData or vehicleData.owner ~= xPlayer.getIdentifier() or not vehicleData.stored or vehicleData.garage ~= data.garageKey then return CheatDetected(xPlayer.source) end
 
     local spawnCoords = Config.Garages[data.garageKey].Spawns[data.spawnIndex]
 
@@ -26,7 +26,7 @@ RegisterServerEvent("esx_garages:storeOwnedVehicle", function(data)
 
     if not xVehicle or xVehicle.owner ~= xPlayer.getIdentifier() then return xPlayer.showNotification("You cannot store this vehicle", "error") end
 
-    if not IsCoordsInGarageZone(xVehicle.getCoords(true), data.garageKey) or GetEntityModel(entity) ~= data.properties?.model then return --[[Player is cheating...]] end
+    if not IsCoordsInGarageZone(xVehicle.getCoords(true), data.garageKey) or not IsPlayerAuthorizedToAccessGarage(xPlayer, data.garageKey) or GetEntityModel(entity) ~= data.properties?.model then return CheatDetected(xPlayer.source) end
 
     xVehicle.setStored(true, true)
 

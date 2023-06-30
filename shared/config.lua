@@ -14,7 +14,6 @@ Config.Garages = {
     ["legion"] = {
         Label = "Legion Garage",
         Type = "car",
-        Groups = {},
         RadialMenu = nil, -- Can override Config.RadialMenu for this specific garage
         Peds = {
             { Model = nil, Coords = vector4(213.6, -809.6, 30.0, 340.1) },
@@ -46,6 +45,49 @@ Config.Garages = {
             vector4(217.133, -770.971, 30.433, 250.111),
             vector4(218.016, -768.383, 30.428, 249.411),
             vector4(218.935, -765.852, 30.424, 250.146),
+        }
+    },
+    ["mrpd_car"] = {
+        Label = "MRPD Garage",
+        Type = "car",
+        RadialMenu = nil, -- Can override Config.RadialMenu for this specific garage
+        Groups = { "police" },
+        Peds = {
+            { Model = `S_M_Y_Cop_01`, Coords = vector4(441.214, -1013.074, 27.612, 186.823) }
+        },
+        Thickness = 6,
+        Points = {
+            vector3(410.654, -1033.008, 28.2),
+            vector3(410.673, -1017.740, 28.2),
+            vector3(427.415, -1017.518, 28.2),
+            vector3(427.683, -1011.576, 28.2),
+            vector3(429.052, -1011.428, 28.2),
+            vector3(428.639, -994.029, 28.2),
+            vector3(455.265, -993.977, 28.2),
+            vector3(454.976, -1011.248, 28.2),
+            vector3(456.283, -1011.470, 28.2),
+            vector3(456.348, -1006.206, 28.2),
+            vector3(459.030, -1006.944, 28.2),
+            vector3(459.325, -1012.908, 28.2),
+            vector3(466.138, -1012.951, 28.2),
+            vector3(466.132, -1021.347, 28.2),
+            vector3(459.030, -1021.654, 28.2),
+            vector3(467.137, -1022.700, 28.2),
+            vector3(467.229, -1020.639, 28.2),
+            vector3(471.741, -1020.451, 28.2),
+            vector3(471.742, -1017.718, 28.2),
+            vector3(488.454, -1017.525, 28.2),
+            vector3(488.173, -1025.240, 28.2),
+            vector3(467.408, -1027.735, 28.2),
+            vector3(467.329, -1026.067, 28.2),
+        },
+        Spawns = {
+            vector4(427.378, -1027.928, 28.577, 5.853),
+            vector4(431.201, -1027.353, 28.509, 5.82),
+            vector4(434.924, -1026.973, 28.442, 4.693),
+            vector4(438.628, -1026.483, 28.372, 5.391),
+            vector4(442.508, -1025.965, 28.297, 5.215),
+            vector4(446.111, -1025.423, 28.225, 6.965),
         }
     },
 }

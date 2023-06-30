@@ -9,7 +9,11 @@ function Target.addVehicle(garageKey)
             label = "Store Vehicle",
             icon = "fa-solid fa-parking",
             event = "esx_garages:storeOwnedVehicle",
-            distance = 3,
+            distance = 4,
+            groups = Config.Garages[garageKey].Groups,
+            canInteract = function()
+                return IsPlayerAuthorizedToAccessGarage(garageKey)
+            end,
             garageKey = garageKey
         }
     })
@@ -30,7 +34,11 @@ function Target.addPed(entity, garageKey)
             label = "Open Garage",
             icon = "fa-solid fa-warehouse",
             event = "esx_garages:openGarageMenu",
-            distance = 3,
+            distance = 4,
+            groups = Config.Garages[garageKey].Groups,
+            canInteract = function()
+                return IsPlayerAuthorizedToAccessGarage(garageKey)
+            end,
             garageKey = garageKey
         }
     })

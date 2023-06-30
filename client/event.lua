@@ -51,7 +51,7 @@ AddEventHandler("esx_garages:openVehicleMenu", function(data)
                     for i = 1, #spawnPoints do
                         local spawnPoint = spawnPoints[i]
 
-                        if ESX.Game.IsSpawnPointClear(vector3(spawnPoint.x, spawnPoint.y, spawnPoint.z), 1.0) then
+                        if ESX.Game.IsSpawnPointClear(vector3(spawnPoint.x, spawnPoint.y, spawnPoint.z), 2.0) then
                             data.spawnIndex = spawnPoint.index
                             return TriggerServerEvent("esx_garages:takeOutOwnedVehicle", data)
                         end

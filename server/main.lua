@@ -44,6 +44,62 @@ MySQL.ready(function()
     end
 end)
 
+---@param xPlayer table | number
+---@param garageKey string
+---@return boolean
+function IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey)
+    local garageGroups = Config.Garages[garageKey].Groups
+
+    if not garageGroups then return true end
+
+    local garageGroupsType = type(garageGroups)
+
+    if garageGroupsType == "string" then
+        garageGroups = { garageGroups }
+        garageGroupsType = "table"
+    end
+
+    local xPlayerType = type(xPlayer)
+
+    if xPlayerType == "number" then
+        xPlayer = ESX.GetPlayerFromId(xPlayer)
+        xPlayerType = "table"
+    end
+
+    if xPlayerType ~= "table" then return false end
+
+    xPlayer.job = xPlayer.getJob()
+    local playerGroups = xPlayer.getGroups()
+    local playerJobName = xPlayer.job.name
+    local playerJobDuty = xPlayer.job.duty
+    local playerJobGrade = xPlayer.job.grade
+
+    if garageGroupsType == "table" then
+        if table.type(garageGroups) == "array" then
+            for i = 1, #garageGroups do
+                local garageGroupName = garageGroups[i]
+
+                if garageGroupName == playerJobName and playerJobDuty then return true end
+
+                if playerGroups[garageGroupName] and not ESX.GetJob(garageGroupName) --[[making sure the group is not a job]] then return true end
+            end
+        else
+            for garageGroupName, garageGroupGrade in pairs(garageGroups) do
+                if garageGroupName == playerJobName and garageGroupGrade == playerJobGrade and playerJobDuty then return true end
+
+                if playerGroups[garageGroupName] == garageGroupGrade and not ESX.GetJob(garageGroupName) --[[making sure the group is not a job]] then return true end
+            end
+        end
+    end
+
+    return false
+end
+
+---@param source string | number
+function CheatDetected(source)
+    print(("[^1CHEATING^7] Player (^5%s^7) with the identifier of (^5%s^7) is detected ^1cheating^7 through triggering events!"):format(source, GetPlayerIdentifierByType(source --[[@as string]], "license")))
+end
+
 ---@class CImpoundData
 ---@field entity number
 ---@field reason? string

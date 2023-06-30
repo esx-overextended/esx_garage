@@ -4,14 +4,9 @@ function zone.configureRadialMenu(action, data)
     if not data.RadialMenu and not Config.RadialMenu then return end
 
     if action == "enter" then
-        lib.addRadialItem({
-            id = RadialMenu.GlobalId,
-            icon = "warehouse",
-            label = "Garage",
-            menu = RadialMenu.SubId
-        })
+        RadialMenu.addItem(data.garageKey)
     elseif action == "exit" then
-        lib.removeRadialItem(RadialMenu.GlobalId)
+        RadialMenu.removeItem()
     end
 end
 
