@@ -1,5 +1,20 @@
 local zone, garageZones, hasInitialized = {}, {}, false
 
+function zone.configureRadialMenu(action, data)
+    if not data.RadialMenu and not Config.RadialMenu then return end
+
+    if action == "enter" then
+        lib.addRadialItem({
+            id = RadialMenu.GlobalId,
+            icon = "warehouse",
+            label = "Garage",
+            menu = RadialMenu.SubId
+        })
+    elseif action == "exit" then
+        lib.removeRadialItem(RadialMenu.GlobalId)
+    end
+end
+
 function zone.configureVehicle(action, data)
     if action == "enter" then
         garageZones[data.garageKey].vehicleTargetId = Target.addVehicle(data.garageKey)

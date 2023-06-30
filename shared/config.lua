@@ -8,11 +8,14 @@ Config.TransferPrice = 1000
 
 Config.RestoreVehicles = true
 
+Config.RadialMenu = true
+
 Config.Garages = {
     ["legion"] = {
         Label = "Legion Garage",
         Type = "car",
         Groups = {},
+        RadialMenu = nil, -- Can override Config.RadialMenu for this specific garage
         Peds = {
             { Model = nil, Coords = vector4(213.6, -809.6, 30.0, 340.1) },
             { Model = nil, Coords = vector4(225.4, -740.5, 33.2, 263.6) }
@@ -23,6 +26,8 @@ Config.Garages = {
             vector3(199.9, -805.8, 34.0),
             vector3(226.3, -732.9, 34.0),
             vector3(272.1, -748.6, 34.0),
+            vector3(258.4, -787.0, 34.0),
+            vector3(252.7, -784.9, 34.0)
         },
         Spawns = {
             vector4(206.25, -801.21, 31.00, 250.47),
