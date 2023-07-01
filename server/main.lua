@@ -44,6 +44,87 @@ MySQL.ready(function()
     end
 end)
 
+---@param dbResults table
+---@param garageKey string
+---@return table, table
+function GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
+    local vehicles, contextOptions, count = {}, {}, 0
+
+    if dbResults and garageKey then
+        for i = 1, #dbResults do
+            local dbResult = dbResults[i]
+            dbResult.vehicle = json.decode(dbResult.vehicle)
+
+            if not dbResult.model and dbResult.vehicle?.model then -- probably just migrated from esx-legacy therefore dbResult.model is empty...
+                for vModel, vData in pairs(ESX.GetVehicleData()) do
+                    if vData.hash == dbResult.vehicle.model then
+                        dbResult.model = vModel
+                        break
+                    end
+                end
+            end
+
+            if not dbResult.model then print(("[^3WARNING^7] Vehicle hash (^1%s^7) for ID (^5%s^7) is invalid \nEnsure vehicle exists in ^2'@es_extended/files/vehicles.json'^7"):format(dbResult.vehicle?.model, dbResult.id)) goto skipLoop end
+
+            count += 1
+            vehicles[count] = {
+                id = dbResult.id,
+                plate = dbResult.plate,
+                vehicle = dbResult.vehicle,
+                stored = dbResult.stored == 1,
+                garage = dbResult.garage
+            }
+
+            local modelData = ESX.GetVehicleData(dbResult.model)
+            local vehicleName = ("%s %s"):format(modelData.make, modelData.name)
+
+            local contextDescription = ("Plate: %s"):format(dbResult.plate)
+            local contextMetadata = {
+                { label = "Status", value = vehicles[count].stored and ("Stored in %s"):format(dbResult.garage == garageKey and "Here" or Config.Garages[dbResult.garage]?.Label) or "Out" }
+            }
+
+            if dbResult.vehicle.plate ~= dbResult.plate then
+                contextDescription = ("%s - %s"):format(contextDescription, ("Fake Plate: %s"):format(dbResult.vehicle.plate))
+            end
+
+            if vehicles[count].stored and dbResult.vehicle then
+                if dbResult.vehicle.fuelLevel then
+                    local fuelLevel = dbResult.vehicle.fuelLevel
+                    contextMetadata[#contextMetadata + 1] = { label = "Fuel", value = ("%%%s"):format(fuelLevel), progress = fuelLevel }
+                end
+
+                if dbResult.vehicle.bodyHealth then
+                    local bodyHealth = dbResult.vehicle.bodyHealth / 10
+                    contextMetadata[#contextMetadata + 1] = { label = "Body Health", value = ("%%%s"):format(bodyHealth), progress = bodyHealth }
+                end
+
+                if dbResult.vehicle.engineHealth then
+                    local engineHealth = dbResult.vehicle.engineHealth / 10
+                    contextMetadata[#contextMetadata + 1] = { label = "Engine Health", value = ("%%%s"):format(engineHealth), progress = engineHealth }
+                end
+            end
+
+            if dbResult.impounded_at then
+                contextDescription = "Impounded"
+            end
+
+            contextOptions[count] = {
+                title = vehicleName,
+                description = contextDescription,
+                arrow = vehicles[count].stored,
+                disabled = dbResult.impounded_at ~= nil,
+                event = vehicles[count].stored and "esx_garages:openVehicleMenu",
+                args = { vehicleName = vehicleName, vehicleId = dbResult.id, plate = dbResult.plate, storedGarage = dbResult.garage, garageKey = garageKey },
+                metadata = contextMetadata
+            }
+
+            ::skipLoop::
+        end
+    end
+
+    return vehicles, contextOptions
+end
+
 ---@param xPlayer table | number
 ---@param garageKey string
 ---@return boolean
@@ -102,9 +183,17 @@ function IsCoordsAvailableToSpawn(coords, range)
     coords = vector3(coords.x, coords.y, coords.z)
     range = range or 2.25
 
-    local _, _, vehiclesCount = ESX.OneSync.GetVehiclesInArea(coords, range)
+    local _, _, count = ESX.OneSync.GetVehiclesInArea(coords, range)
 
-    return vehiclesCount == 0
+    return count == 0
+end
+
+function ApplyFuelToVehicle(vehicleEntity, fuelAmount)
+    if not vehicleEntity or not fuelAmount then return end
+
+    if GetResourceState("ox_fuel"):find("start") then
+        return Entity(vehicleEntity).state:set("fuel", fuelAmount, true)
+    end
 end
 
 ---@param source string | number

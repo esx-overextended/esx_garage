@@ -1,7 +1,7 @@
 AddEventHandler("esx_garages:openGarageMenu", function(data)
-    if not IsPlayerInGarageZone(data?.garageKey) then return end
+    if not IsPlayerInGarageZone(data?.garageKey) or not IsPlayerAuthorizedToAccessGarage(data?.garageKey) then return print("[^1ERROR^7] You are NOT authorized to access this garage at the moment!") end
 
-    local vehicles, contextOptions = lib.callback.await("esx_garages:getOwnedVehicles", false, data.garageKey)
+    local vehicles, contextOptions = lib.callback.await(not Config.Garages[data.garageKey].Groups and "esx_garages:getOwnedVehicles" or "esx_garages:getSocietyVehicles", false, data.garageKey)
 
     lib.registerContext({
         id = "esx_garages:garageMenu",
@@ -13,7 +13,7 @@ AddEventHandler("esx_garages:openGarageMenu", function(data)
 end)
 
 AddEventHandler("esx_garages:openVehicleMenu", function(data)
-    if not IsPlayerInGarageZone(data?.garageKey) then return end
+    if not IsPlayerInGarageZone(data?.garageKey) or not IsPlayerAuthorizedToAccessGarage(data?.garageKey) then return print("[^1ERROR^7] You are NOT authorized to access this garage at the moment!") end
 
     local canTakeoutVehicle = data.storedGarage == data.garageKey
 
@@ -42,7 +42,7 @@ AddEventHandler("esx_garages:openVehicleMenu", function(data)
 
                         for i = 1, #Config.Garages[data.garageKey].Spawns do
                             local spawnPoint = Config.Garages[data.garageKey].Spawns[i]
-                            spawnPoints[i] = { x = spawnPoint.x, y = spawnPoint.y, z = spawnPoint.z, index = i}
+                            spawnPoints[i] = { x = spawnPoint.x, y = spawnPoint.y, z = spawnPoint.z, index = i }
                         end
 
                         local coords = vector3(cache.coords.x, cache.coords.y, cache.coords.z)
@@ -72,6 +72,8 @@ end)
 
 AddEventHandler("esx_garages:storeOwnedVehicle", function(data)
     if not IsCoordsInGarageZone(GetEntityCoords(data?.entity), data?.garageKey) then return end
+
+    if not IsPlayerInGarageZone(data?.garageKey) or not IsPlayerAuthorizedToAccessGarage(data?.garageKey) then return print("[^1ERROR^7] You are NOT authorized to access this garage at the moment!") end
 
     data.netId = NetworkGetNetworkIdFromEntity(data.entity)
     data.properties = ESX.Game.GetVehicleProperties(data.entity)
