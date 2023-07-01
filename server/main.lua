@@ -100,7 +100,7 @@ end
 ---@return boolean
 function IsCoordsAvailableToSpawn(coords, range)
     coords = vector3(coords.x, coords.y, coords.z)
-    range = range or 3.0
+    range = range or 2.25
 
     local _, _, vehiclesCount = ESX.OneSync.GetVehiclesInArea(coords, range)
 

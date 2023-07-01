@@ -11,12 +11,12 @@ RegisterServerEvent("esx_garages:takeOutOwnedVehicle", function(data)
 
     local spawnCoords = Config.Garages[data.garageKey].Spawns[data.spawnIndex]
 
-    if not spawnCoords then
+    if not spawnCoords and Shared.AvailableSpawnPointIndicator == lib.context then
         local spawnPoints = {}
 
         for i = 1, #Config.Garages[data.garageKey].Spawns do
             local spawnPoint = Config.Garages[data.garageKey].Spawns[i]
-            spawnPoints[i] = { x = spawnPoint.z, y = spawnPoint.y, z = spawnPoint.z, index = i}
+            spawnPoints[i] = { x = spawnPoint.x, y = spawnPoint.y, z = spawnPoint.z, index = i}
         end
 
         local coords = GetEntityCoords(GetPlayerPed(xPlayer.source))

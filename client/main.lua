@@ -40,17 +40,16 @@ end
 
 ---@param coords vector3 | vector4 | table
 ---@return boolean
-function IsCoordsAvailableToSpawn(coords, range) -- why this shit doesn't work?
+function IsCoordsAvailableToSpawn(coords, range)
     coords = vector3(coords.x, coords.y, coords.z)
-    range = range or 3.0
+    range = range or 2.25
 
-    -- return not IsAnyPedNearPoint(coords.x, coords.y, coords.z, range) and
-    --     not IsAnyVehicleNearPoint(coords.x, coords.y, coords.z, range) and
-    --     not IsAnyObjectNearPoint(coords.x, coords.y, coords.z, range, true)
+    return not IsAnyPedNearPoint(coords.x, coords.y, coords.z, range) and
+        not IsAnyVehicleNearPoint(coords.x, coords.y, coords.z, range) and
+        not IsAnyObjectNearPoint(coords.x, coords.y, coords.z, range, false)
 
     -- return ESX.Game.IsSpawnPointClear(coords, range)
-
-    return #lib.getNearbyVehicles(coords, range, true) == 0
+    -- return #lib.getNearbyVehicles(coords, range, true) == 0
 end
 
 function OnPlayerData(key)

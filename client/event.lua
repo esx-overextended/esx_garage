@@ -37,27 +37,29 @@ AddEventHandler("esx_garages:openVehicleMenu", function(data)
                 arrow = canTakeoutVehicle,
                 disabled = not canTakeoutVehicle,
                 onSelect = function()
-                    -- local spawnPoints = {}
+                    if Shared.AvailableSpawnPointIndicator == lib.context then
+                        local spawnPoints = {}
 
-                    -- for i = 1, #Config.Garages[data.garageKey].Spawns do
-                    --     local spawnPoint = Config.Garages[data.garageKey].Spawns[i]
-                    --     spawnPoints[i] = { x = spawnPoint.z, y = spawnPoint.y, z = spawnPoint.z, index = i}
-                    -- end
+                        for i = 1, #Config.Garages[data.garageKey].Spawns do
+                            local spawnPoint = Config.Garages[data.garageKey].Spawns[i]
+                            spawnPoints[i] = { x = spawnPoint.x, y = spawnPoint.y, z = spawnPoint.z, index = i}
+                        end
 
-                    -- local coords = vector3(cache.coords.x, cache.coords.y, cache.coords.z)
+                        local coords = vector3(cache.coords.x, cache.coords.y, cache.coords.z)
 
-                    -- table.sort(spawnPoints, function(a, b)
-                    --     return #(vector3(a.x, a.y, a.z) - coords) < #(vector3(b.x, b.y, b.z) - coords)
-                    -- end)
+                        table.sort(spawnPoints, function(a, b)
+                            return #(vector3(a.x, a.y, a.z) - coords) < #(vector3(b.x, b.y, b.z) - coords)
+                        end)
 
-                    -- for i = 1, #spawnPoints do
-                    --     local spawnPoint = spawnPoints[i]
+                        for i = 1, #spawnPoints do
+                            local spawnPoint = spawnPoints[i]
 
-                    --     if IsCoordsAvailableToSpawn(spawnPoint) then
-                    --         data.spawnIndex = spawnPoint.index
-                    --         break
-                    --     end
-                    -- end
+                            if IsCoordsAvailableToSpawn(spawnPoint) then
+                                data.spawnIndex = spawnPoint.index
+                                break
+                            end
+                        end
+                    end
 
                     TriggerServerEvent("esx_garages:takeOutOwnedVehicle", data)
                 end
