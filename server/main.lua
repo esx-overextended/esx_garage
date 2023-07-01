@@ -2,7 +2,9 @@ local sql = {
     [[
         ALTER TABLE `owned_vehicles`
         ADD COLUMN IF NOT EXISTS `garage` VARCHAR(60) DEFAULT NULL,
-        ADD COLUMN IF NOT EXISTS `last_garage` VARCHAR(60) DEFAULT 'legion'
+        ADD COLUMN IF NOT EXISTS `last_garage` VARCHAR(60) DEFAULT 'legion',
+
+        ADD INDEX IF NOT EXISTS `garage` (`garage`)
     ]],
 
     "DROP TRIGGER IF EXISTS `update_owned_vehicles_garage_and_last_garage`",

@@ -39,7 +39,7 @@ lib.callback.register("esx_garages:getSocietyVehicles", function(source, garageK
     if not next(currentGarageGroups) then return print(("[^1ERROR^7] Mulfunctioned data for garage (^5%s^7) as per Player (^5%s^7) request. Expected groups but received nothing!"):format(garageKey, xPlayer.source)) end
 
     local query =
-    "SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage` FROM `owned_vehicles` AS ov LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id` WHERE (ov.`owner` = ? OR ov.`owner` IS NULL) AND ov.`type` = ? AND ov.`job` IN (?)"
+    "SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage` FROM `owned_vehicles` AS ov LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id` WHERE (ov.`owner` = ? OR ov.`owner` = '' OR ov.`owner` IS NULL) AND ov.`type` = ? AND ov.`job` IN (?)"
     local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier(), Config.Garages[garageKey].Type, table.unpack(currentGarageGroups) })
 
     return GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
