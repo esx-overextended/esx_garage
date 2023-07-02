@@ -160,3 +160,17 @@ Config.Garages = {
         }
     },
 }
+
+Config.Impounds = {
+    ["city_impound"] = {
+        Label = "City Vehicle Impound Lot",
+        Type = "car",
+        Peds = {
+            { Model = nil, Coords = vector4(213.6, -809.6, 30.0, 340.1) },
+            { Model = nil, Coords = vector4(225.4, -740.5, 33.2, 263.6) }
+        },
+        Thickness = 8,
+        Points = {},
+        Spawns = {}
+    },
+}
