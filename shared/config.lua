@@ -1,12 +1,12 @@
 Config = {}
 
-Config.Debug = false
+Config.Debug = true
 
 Config.DefaultPed = `s_m_y_airworker`
 
 Config.TransferPrice = 1000
 
-Config.RestoreVehicles = true
+Config.RestoreVehicles = false
 
 Config.RadialMenu = true
 
@@ -166,11 +166,18 @@ Config.Impounds = {
         Label = "City Vehicle Impound Lot",
         Type = "car",
         Peds = {
-            { Model = nil, Coords = vector4(213.6, -809.6, 30.0, 340.1) },
-            { Model = nil, Coords = vector4(225.4, -740.5, 33.2, 263.6) }
+            { Model = nil, Coords = vector4(409.022, -1622.879, 28.291, 232.386) },
         },
-        Thickness = 8,
-        Points = {},
+        Thickness = 4,
+        Points = {
+            vector3(409.402, -1616.627, 30.0),
+            vector3(387.976, -1641.988, 30.0),
+            vector3(410.544, -1661.237, 30.0),
+            vector3(423.439, -1645.282, 30.0),
+            vector3(424.056, -1640.452, 30.0),
+            vector3(423.943, -1632.924, 30.0),
+            vector3(423.212, -1628.171, 30.0),
+        },
         Spawns = {}
     },
 }

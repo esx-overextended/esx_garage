@@ -42,7 +42,7 @@ MySQL.ready(function()
     MySQL.transaction.await(sql)
 
     if Config.RestoreVehicles then
-        MySQL.update.await("UPDATE `owned_vehicles` SET `stored` = 1, `garage` = `last_garage` WHERE `stored` = 0 OR `stored` IS NULL")
+        MySQL.update.await("UPDATE `owned_vehicles` SET `stored` = 1, `garage` = `last_garage` WHERE `stored` != 1 AND NOT EXISTS (SELECT 1 FROM `impounded_vehicles` WHERE `impounded_vehicles`.`id` = `owned_vehicles`.`id`)")
     end
 end)
 
@@ -205,7 +205,36 @@ end
 
 ---@param source string | number
 function CheatDetected(source)
-    print(("[^1CHEATING^7] Player (^5%s^7) with the identifier of (^5%s^7) is detected ^1cheating^7 through triggering events!"):format(source, GetPlayerIdentifierByType(source --[[@as string]], "license")))
+    print(("[^1CHEATING^7] Player (^5%s^7) with the identifier of (^5%s^7) is detected ^1cheating^7!"):format(source, GetPlayerIdentifierByType(source --[[@as string]], "license")))
+end
+
+---@param secondsToConvert number
+---@return string
+function GetTimeStringFromSecond(secondsToConvert)
+    local hours = math.floor(secondsToConvert / 3600)
+    local minutes = math.floor((secondsToConvert % 3600) / 60)
+    local seconds = secondsToConvert % 60
+
+    hours = hours < 10 and ("0%s"):format(hours) or tostring(hours) ---@diagnostic disable-line: cast-local-type
+    minutes = minutes < 10 and ("0%s"):format(minutes) or tostring(minutes) ---@diagnostic disable-line: cast-local-type
+    seconds = seconds < 10 and ("0%s"):format(seconds) or tostring(seconds) ---@diagnostic disable-line: cast-local-type
+
+    return ("%s:%s:%s"):format(hours, minutes, seconds)
+end
+
+---@param vehicleModel string
+---@return string
+function GetIconForVehicleModel(vehicleModel)
+    local modelType = ESX.GetVehicleData(vehicleModel)?.type
+
+    if modelType == "automobile" then return "fa-solid fa-car"
+    elseif modelType == "bike" then return "fa-solid fa-motorcycle"
+    elseif modelType == "quadbike" then return "fa-solid fa-tricycle-adult"
+    elseif modelType == "heli" then return "fa-solid fa-helicopter"
+    elseif modelType == "plane" then return "fa-solid fa-plane"
+    elseif modelType == "trailer" then return "fa-solid fa-trailer" end
+
+    return "fa-solid fa-car" -- default icon
 end
 
 ---@class CImpoundData

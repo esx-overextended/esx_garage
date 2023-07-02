@@ -5,7 +5,7 @@ lib.callback.register("esx_garages:getOwnedVehicles", function(source, garageKey
 
     if not IsPlayerInGarageZone(xPlayer.source, garageKey) or not IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey) then return CheatDetected(xPlayer.source) end
 
-    local query = "SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage` FROM `owned_vehicles` AS ov LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id` WHERE ov.`owner` = ? AND ov.`type` = ? AND ov.`job` IS NULL"
+    local query = "SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage`, iv.`impounded_at` FROM `owned_vehicles` AS ov LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id` WHERE ov.`owner` = ? AND ov.`type` = ? AND ov.`job` IS NULL"
     local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier(), Config.Garages[garageKey].Type })
 
     return GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
@@ -38,7 +38,7 @@ lib.callback.register("esx_garages:getSocietyVehicles", function(source, garageK
 
     if not next(currentGarageGroups) then return print(("[^1ERROR^7] Mulfunctioned data for garage (^5%s^7) as per Player (^5%s^7) request. Expected groups but received nothing!"):format(garageKey, xPlayer.source)) end
 
-    local query = "SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage` FROM `owned_vehicles` AS ov LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id` WHERE (ov.`owner` = ? OR ov.`owner` = '' OR ov.`owner` IS NULL) AND ov.`type` = ? AND ov.`job` IN (?)"
+    local query = "SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage`, iv.`impounded_at` FROM `owned_vehicles` AS ov LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id` WHERE (ov.`owner` = ? OR ov.`owner` = '' OR ov.`owner` IS NULL) AND ov.`type` = ? AND ov.`job` IN (?)"
     local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier(), Config.Garages[garageKey].Type, table.unpack(currentGarageGroups) })
 
     return GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
@@ -66,8 +66,12 @@ lib.callback.register("esx_garages:getImpoundedVehicles", function(source, impou
     if not IsPlayerInImpoundZone(xPlayer.source, impoundKey) then return CheatDetected(xPlayer.source) end
 
     local _type = type(Config.Impounds[impoundKey].Type)
-    local currentImpoundTypes = _type == "string" and { Config.Impounds[impoundKey].Type } or _type == "table" and Config.Impounds[impoundKey].Type --[[@as table]]
-    local query = "SELECT ov.`id`, ov.`plate`, ov.`job`, ov.`model`, ov.`vehicle` FROM `owned_vehicles` AS ov LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id` WHERE ov.`owner` = ? AND ov.`type` IN (?) AND ov.`stored` != 1"
+    local currentImpoundTypes = _type == "string" and { Config.Impounds[impoundKey].Type } or _type == "table" and Config.Impounds[impoundKey].Type or {} --[[@as table]]
+    local query = [[SELECT ov.`id`, ov.`plate`, ov.`job`, ov.`model`, ov.`vehicle`, iv.*, CASE WHEN NOW() >= iv.`release_date` THEN 1 ELSE 0 END AS `is_release_date_passed`,
+    TIMESTAMPDIFF(SECOND, NOW(), iv.`release_date`) AS `release_date_second_until`
+    FROM `owned_vehicles` AS `ov`
+    LEFT JOIN `impounded_vehicles` AS `iv` ON ov.`id` = iv.`id`
+    WHERE ov.`owner` = ? AND ov.`type` IN (?) AND ov.`stored` != 1]]
     local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier(), table.unpack(currentImpoundTypes) })
 
     local vehicles, contextOptions, count = {}, {}, 0
@@ -92,18 +96,15 @@ lib.callback.register("esx_garages:getImpoundedVehicles", function(source, impou
 
         if not dbResult.model then print(("[^3WARNING^7] Vehicle hash (^1%s^7) for ID (^5%s^7) is invalid \nEnsure vehicle exists in ^2'@es_extended/files/vehicles.json'^7"):format(dbResult.vehicle?.model, dbResult.id)) goto skipLoop end
 
-        local canGetVehicle = false
-
-        if dbResult.release_date <= os.date() then -- TODO: needs checking
-            canGetVehicle = true
-        end
+        local canGetVehicle = true
+        local canReleaseVehicle = (dbResult.impounded_at == nil and true) or dbResult.is_release_date_passed == 1
 
         for j = 1, worldVehiclesCount do
             local worldVehicle = worldVehicles[j]
             local worldVehiclePlate = GetVehicleNumberPlateText(worldVehicle)
 
             if worldVehiclePlate == dbResult.plate or worldVehiclePlate == dbResult.vehicle?.plate then
-                if GetVehiclePetrolTankHealth(worldVehicle) <= 0 and GetVehicleBodyHealth(worldVehicle) <= 0 then
+                if GetVehiclePetrolTankHealth(worldVehicle) <= 0 or GetVehicleBodyHealth(worldVehicle) <= 0 or GetVehicleEngineHealth(worldVehicle) <= 0 then
                     ESX.DeleteVehicle(worldVehicle)
                 else
                     canGetVehicle = false
@@ -126,7 +127,7 @@ lib.callback.register("esx_garages:getImpoundedVehicles", function(source, impou
 
         local contextDescription = ("Plate: %s"):format(dbResult.plate)
         local contextMetadata = {
-            { label = "Status", value = dbResult.impounded_at and (dbResult.release_date and ("Impounded until %s"):format(contextDescription) or "Impounded") or "Out" }
+            { label = "Status", value = dbResult.impounded_at and (not canReleaseVehicle and ("Can be released in %s"):format(GetTimeStringFromSecond(dbResult.release_date_second_until)) or "Can be released now") or "Out" }
         }
 
         if dbResult.vehicle.plate ~= dbResult.plate then
@@ -136,8 +137,10 @@ lib.callback.register("esx_garages:getImpoundedVehicles", function(source, impou
         contextOptions[count] = {
             title = vehicleName,
             description = contextDescription,
-            arrow = canGetVehicle,
-            event = canGetVehicle and "esx_garages:CHANGEME", -- TODO
+            icon = GetIconForVehicleModel(dbResult.model),
+            iconColor = not canReleaseVehicle and "red" or not canGetVehicle and "yellow" or "green",
+            arrow = canReleaseVehicle and canGetVehicle,
+            event = canReleaseVehicle and canGetVehicle and "esx_garages:CHANGEME", -- TODO
             args = { vehicleName = vehicleName, vehicleId = dbResult.id, plate = dbResult.plate, impoundKey = impoundKey },
             metadata = contextMetadata
         }
