@@ -80,3 +80,17 @@ AddEventHandler("esx_garages:storeOwnedVehicle", function(data)
 
     TriggerServerEvent("esx_garages:storeOwnedVehicle", data)
 end)
+
+AddEventHandler("esx_garages:openImpoundMenu", function(data)
+    if not IsPlayerInImpoundZone(data?.impoundKey) then return print("[^1ERROR^7] You are NOT authorized to access this impound at the moment!") end
+
+    local vehicles, contextOptions = lib.callback.await("esx_garages:getImpoundedVehicles", false, data.impoundKey)
+
+    lib.registerContext({
+        id = "esx_garages:impoundMenu",
+        title = Config.Impounds[data.impoundKey]?.Label,
+        options = vehicles and contextOptions
+    })
+
+    return lib.showContext("esx_garages:impoundMenu")
+end)

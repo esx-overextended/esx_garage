@@ -182,3 +182,13 @@ function IsCoordsInGarageZone(coords, garageKey)
 
     return garageZones[garageKey].polyZone:contains(coords)
 end
+
+---@param impoundKey string
+---@return boolean
+function IsPlayerInImpoundZone(impoundKey)
+    impoundKey = tostring(impoundKey) --[[@as string]]
+
+    if not impoundKey or not impoundZones[impoundKey] then return false end
+
+    return impoundZones[impoundKey].polyZone:contains(cache.coords)
+end

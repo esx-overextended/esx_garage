@@ -128,18 +128,16 @@ function GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
 end
 
 ---@param xPlayer table | number
----@param garageKey string
+---@param groupsToCheck? string | table
 ---@return boolean
-function IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey)
-    local garageGroups = Config.Garages[garageKey].Groups
+function DoesPlayerHaveAccessToGroup(xPlayer, groupsToCheck)
+    if not groupsToCheck or groupsToCheck == "" then return true end
 
-    if not garageGroups then return true end
+    local groupsToCheckType = type(groupsToCheck)
 
-    local garageGroupsType = type(garageGroups)
-
-    if garageGroupsType == "string" then
-        garageGroups = { garageGroups }
-        garageGroupsType = "table"
+    if groupsToCheckType == "string" then
+        groupsToCheck = { groupsToCheck }
+        groupsToCheckType = "table"
     end
 
     local xPlayerType = type(xPlayer)
@@ -157,25 +155,32 @@ function IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey)
     local playerJobDuty = xPlayer.job.duty
     local playerJobGrade = xPlayer.job.grade
 
-    if garageGroupsType == "table" then
-        if table.type(garageGroups) == "array" then
-            for i = 1, #garageGroups do
-                local garageGroupName = garageGroups[i]
+    if groupsToCheckType == "table" then
+        if table.type(groupsToCheck) == "array" then
+            for i = 1, #groupsToCheck do
+                local groupName = groupsToCheck[i]
 
-                if garageGroupName == playerJobName and playerJobDuty then return true end
+                if groupName == playerJobName and playerJobDuty then return true end
 
-                if playerGroups[garageGroupName] and not ESX.GetJob(garageGroupName) --[[making sure the group is not a job]] then return true end
+                if playerGroups[groupName] and not ESX.GetJob(groupName) --[[making sure the group is not a job]] then return true end
             end
         else
-            for garageGroupName, garageGroupGrade in pairs(garageGroups) do
-                if garageGroupName == playerJobName and garageGroupGrade == playerJobGrade and playerJobDuty then return true end
+            for groupName, garageGroupGrade in pairs(groupsToCheck) do
+                if groupName == playerJobName and garageGroupGrade == playerJobGrade and playerJobDuty then return true end
 
-                if playerGroups[garageGroupName] == garageGroupGrade and not ESX.GetJob(garageGroupName) --[[making sure the group is not a job]] then return true end
+                if playerGroups[groupName] == garageGroupGrade and not ESX.GetJob(groupName) --[[making sure the group is not a job]] then return true end
             end
         end
     end
 
     return false
+end
+
+---@param xPlayer table | number
+---@param garageKey string
+---@return boolean
+function IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey)
+    return DoesPlayerHaveAccessToGroup(xPlayer, Config.Garages[garageKey]?.Groups)
 end
 
 ---@param coords vector3 | vector4 | table
