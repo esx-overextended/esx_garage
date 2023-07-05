@@ -71,7 +71,7 @@ lib.callback.register("esx_garages:getImpoundedVehicles", function(source, impou
     TIMESTAMPDIFF(SECOND, NOW(), iv.`release_date`) AS `release_date_second_until`
     FROM `owned_vehicles` AS `ov`
     LEFT JOIN `impounded_vehicles` AS `iv` ON ov.`id` = iv.`id`
-    WHERE ov.`owner` = ? AND ov.`type` IN (?) AND ov.`stored` != 1]]
+    WHERE (ov.`owner` = ? or ov.`owner` IS NULL or ov.`owner` = "") AND ov.`type` IN (?) AND ov.`stored` != 1]]
     local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier(), table.unpack(currentImpoundTypes) })
 
     local vehicles, contextOptions, count = {}, {}, 0
