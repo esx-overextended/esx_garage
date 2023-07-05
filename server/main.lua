@@ -27,7 +27,7 @@ local sql = {
             `id` INT NOT NULL,
             `reason` LONGTEXT NULL,
             `note` LONGTEXT NULL,
-            `release_fee` INT NULL,
+            `release_fee` INT NOT NULL,
             `release_date` timestamp NOT NULL,
             `impounded_by` VARCHAR(60) NULL,
             `impounded_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
@@ -42,7 +42,7 @@ MySQL.ready(function()
     MySQL.transaction.await(sql)
 
     if Config.RestoreVehicles then
-        MySQL.update.await("UPDATE `owned_vehicles` SET `stored` = 1, `garage` = `last_garage` WHERE `stored` = 0 OR `stored` IS NULL")
+        MySQL.update.await("UPDATE `owned_vehicles` SET `stored` = 1, `garage` = `last_garage` WHERE `stored` != 1 AND NOT EXISTS (SELECT 1 FROM `impounded_vehicles` WHERE `impounded_vehicles`.`id` = `owned_vehicles`.`id`)")
     end
 end)
 
@@ -128,18 +128,16 @@ function GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
 end
 
 ---@param xPlayer table | number
----@param garageKey string
+---@param groupsToCheck? string | table
 ---@return boolean
-function IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey)
-    local garageGroups = Config.Garages[garageKey].Groups
+function DoesPlayerHaveAccessToGroup(xPlayer, groupsToCheck)
+    if not groupsToCheck or groupsToCheck == "" then return true end
 
-    if not garageGroups then return true end
+    local groupsToCheckType = type(groupsToCheck)
 
-    local garageGroupsType = type(garageGroups)
-
-    if garageGroupsType == "string" then
-        garageGroups = { garageGroups }
-        garageGroupsType = "table"
+    if groupsToCheckType == "string" then
+        groupsToCheck = { groupsToCheck }
+        groupsToCheckType = "table"
     end
 
     local xPlayerType = type(xPlayer)
@@ -157,25 +155,32 @@ function IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey)
     local playerJobDuty = xPlayer.job.duty
     local playerJobGrade = xPlayer.job.grade
 
-    if garageGroupsType == "table" then
-        if table.type(garageGroups) == "array" then
-            for i = 1, #garageGroups do
-                local garageGroupName = garageGroups[i]
+    if groupsToCheckType == "table" then
+        if table.type(groupsToCheck) == "array" then
+            for i = 1, #groupsToCheck do
+                local groupName = groupsToCheck[i]
 
-                if garageGroupName == playerJobName and playerJobDuty then return true end
+                if groupName == playerJobName and playerJobDuty then return true end
 
-                if playerGroups[garageGroupName] and not ESX.GetJob(garageGroupName) --[[making sure the group is not a job]] then return true end
+                if playerGroups[groupName] and not ESX.GetJob(groupName) --[[making sure the group is not a job]] then return true end
             end
         else
-            for garageGroupName, garageGroupGrade in pairs(garageGroups) do
-                if garageGroupName == playerJobName and garageGroupGrade == playerJobGrade and playerJobDuty then return true end
+            for groupName, garageGroupGrade in pairs(groupsToCheck) do
+                if groupName == playerJobName and garageGroupGrade == playerJobGrade and playerJobDuty then return true end
 
-                if playerGroups[garageGroupName] == garageGroupGrade and not ESX.GetJob(garageGroupName) --[[making sure the group is not a job]] then return true end
+                if playerGroups[groupName] == garageGroupGrade and not ESX.GetJob(groupName) --[[making sure the group is not a job]] then return true end
             end
         end
     end
 
     return false
+end
+
+---@param xPlayer table | number
+---@param garageKey string
+---@return boolean
+function IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey)
+    return DoesPlayerHaveAccessToGroup(xPlayer, Config.Garages[garageKey]?.Groups)
 end
 
 ---@param coords vector3 | vector4 | table
@@ -200,7 +205,36 @@ end
 
 ---@param source string | number
 function CheatDetected(source)
-    print(("[^1CHEATING^7] Player (^5%s^7) with the identifier of (^5%s^7) is detected ^1cheating^7 through triggering events!"):format(source, GetPlayerIdentifierByType(source --[[@as string]], "license")))
+    print(("[^1CHEATING^7] Player (^5%s^7) with the identifier of (^5%s^7) is detected ^1cheating^7!"):format(source, GetPlayerIdentifierByType(source --[[@as string]], "license")))
+end
+
+---@param secondsToConvert number
+---@return string
+function GetTimeStringFromSecond(secondsToConvert)
+    local hours = math.floor(secondsToConvert / 3600)
+    local minutes = math.floor((secondsToConvert % 3600) / 60)
+    local seconds = secondsToConvert % 60
+
+    hours = hours < 10 and ("0%s"):format(hours) or tostring(hours) ---@diagnostic disable-line: cast-local-type
+    minutes = minutes < 10 and ("0%s"):format(minutes) or tostring(minutes) ---@diagnostic disable-line: cast-local-type
+    seconds = seconds < 10 and ("0%s"):format(seconds) or tostring(seconds) ---@diagnostic disable-line: cast-local-type
+
+    return ("%s:%s:%s"):format(hours, minutes, seconds)
+end
+
+---@param vehicleModel string
+---@return string
+function GetIconForVehicleModel(vehicleModel)
+    local modelType = ESX.GetVehicleData(vehicleModel)?.type
+
+    if modelType == "automobile" then return "fa-solid fa-car"
+    elseif modelType == "bike" then return "fa-solid fa-motorcycle"
+    elseif modelType == "quadbike" then return "fa-solid fa-tricycle-adult"
+    elseif modelType == "heli" then return "fa-solid fa-helicopter"
+    elseif modelType == "plane" then return "fa-solid fa-plane"
+    elseif modelType == "trailer" then return "fa-solid fa-trailer" end
+
+    return "fa-solid fa-car" -- default icon
 end
 
 ---@class CImpoundData
@@ -226,7 +260,7 @@ function ImpoundVehicle(data)
 
         if impounded_at then return false, "already_impounded" end
 
-        MySQL.insert.await("INSERT INTO `impounded_vehicles` VALUES (?, ?, ?, ?, ?, ?)", { xVehicle.id, data.reason, data.note, data.releaseFee, data.releaseDate, data.impoundedBy })
+        MySQL.insert.await("INSERT INTO `impounded_vehicles` VALUES (?, ?, ?, ?, ?, ?)", { xVehicle.id, data.reason, data.note, data.releaseFee or Config.ImpoundPrice, data.releaseDate, data.impoundedBy })
     end
 
     ESX.DeleteVehicle(data.entity)

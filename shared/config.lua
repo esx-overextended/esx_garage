@@ -1,12 +1,14 @@
 Config = {}
 
-Config.Debug = false
+Config.Debug = true
 
 Config.DefaultPed = `s_m_y_airworker`
 
 Config.TransferPrice = 1000
 
-Config.RestoreVehicles = true
+Config.ImpoundPrice = 1000
+
+Config.RestoreVehicles = false
 
 Config.RadialMenu = true
 
@@ -19,14 +21,14 @@ Config.Garages = {
             { Model = nil, Coords = vector4(213.6, -809.6, 30.0, 340.1) },
             { Model = nil, Coords = vector4(225.4, -740.5, 33.2, 263.6) }
         },
-        Thickness = 8,
+        Thickness = 9,
         Points = {
-            vector3(239.9, -820.5, 34.0),
-            vector3(199.9, -805.8, 34.0),
-            vector3(226.3, -732.9, 34.0),
-            vector3(272.1, -748.6, 34.0),
-            vector3(258.4, -787.0, 34.0),
-            vector3(252.7, -784.9, 34.0)
+            vector3(239.9, -820.5, 33.0),
+            vector3(199.9, -805.8, 33.0),
+            vector3(226.3, -732.9, 33.0),
+            vector3(272.1, -748.6, 33.0),
+            vector3(258.4, -787.0, 33.0),
+            vector3(252.7, -784.9, 33.0)
         },
         Spawns = {
             -- Row 1
@@ -157,6 +159,41 @@ Config.Garages = {
             vector4(438.628, -1026.483, 28.372, 5.391),
             vector4(442.508, -1025.965, 28.297, 5.215),
             vector4(446.111, -1025.423, 28.225, 6.965),
+        }
+    },
+}
+
+Config.Impounds = {
+    ["city_impound"] = {
+        Label = "City Vehicle Impound Lot",
+        Type = "car",
+        Peds = {
+            { Model = nil, Coords = vector4(409.022, -1622.879, 28.291, 232.386) },
+        },
+        Thickness = 4,
+        Points = {
+            vector3(409.402, -1616.627, 30.0),
+            vector3(387.976, -1641.988, 30.0),
+            vector3(410.544, -1661.237, 30.0),
+            vector3(423.439, -1645.282, 30.0),
+            vector3(424.056, -1640.452, 30.0),
+            vector3(423.943, -1632.924, 30.0),
+            vector3(423.212, -1628.171, 30.0),
+        },
+        Spawns = {
+            vector4(417.190, -1627.592, 28.879, 141.321),
+            vector4(419.605, -1629.507, 28.881, 142.663),
+            vector4(421.022, -1635.795, 28.879, 90.529),
+            vector4(421.096, -1638.895, 28.881, 89.679),
+            vector4(420.992, -1642.005, 28.879, 88.776),
+            vector4(418.494, -1646.497, 28.879, 48.97),
+            vector4(410.576, -1656.858, 28.880, 320.644),
+            vector4(408.009, -1654.771, 28.879, 319.99),
+            vector4(405.635, -1652.724, 28.879, 319.605),
+            vector4(403.247, -1650.694, 28.881, 319.616),
+            vector4(400.883, -1648.632, 28.880, 319.01),
+            vector4(398.481, -1646.473, 28.879, 318.613),
+            vector4(396.039, -1644.567, 28.879, 319.265),
         }
     },
 }

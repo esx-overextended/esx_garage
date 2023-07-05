@@ -95,3 +95,37 @@ RegisterServerEvent("esx_garages:storeOwnedVehicle", function(data)
 
     xPlayer.showNotification("Vehicle stored!", "success")
 end)
+
+RegisterServerEvent("esx_garages:removeVehicleFromImpound", function(data)
+    local xPlayer = ESX.GetPlayerFromId(source)
+
+    if not xPlayer or type(data) ~= "table" then return end
+
+    if not IsPlayerInImpoundZone(xPlayer.source, data.impoundKey) then return CheatDetected(xPlayer.source) end
+
+    local _type = type(Config.Impounds[data.impoundKey].Type)
+    local currentImpoundTypes = _type == "string" and { Config.Impounds[data.impoundKey]?.Type } or _type == "table" and Config.Impounds[data.impoundKey]?.Type or {} --[[@as table]]
+    local vehicleData = MySQL.single.await([[SELECT ov.`owner`, ov.`plate`, ov.`job`, iv.`release_fee`
+    FROM `owned_vehicles` AS `ov`
+    LEFT JOIN `impounded_vehicles` AS `iv` ON ov.`id` = iv.`id`
+    WHERE ov.`id` = ? AND ov.`type` IN (?) AND ov.`stored` != 1 AND (iv.`release_date` IS NULL OR NOW() >= iv.`release_date`)]], { data.vehicleId, table.unpack(currentImpoundTypes) })
+
+    if not vehicleData or (vehicleData.owner ~= xPlayer.getIdentifier() and not DoesPlayerHaveAccessToGroup(xPlayer, vehicleData.job)) or (vehicleData.release_fee and xPlayer.getAccount(data.account)?.money < vehicleData.release_fee) then return CheatDetected(xPlayer.source) end
+
+    xPlayer.removeAccountMoney(data.account, vehicleData.release_fee or Config.ImpoundPrice, ("Transferring of %s vehicle (%s) to %s"):format(data.vehicleName, vehicleData.plate, Config.Garages[data.garage]?.Label))
+
+    local queries = { "DELETE FROM `impounded_vehicles` WHERE `id` = @vehicleId" }
+    queries[2] = Config.Garages[data.garage] and "UPDATE `owned_vehicles` SET `stored` = 1, `garage` = @garage WHERE `id` = @vehicleId"
+
+    MySQL.transaction.await(queries, { ["garage"] = data.garage, ["vehicleId"] = data.vehicleId })
+
+    if not data.garage then
+        local spawnCoords = Config.Impounds[data.impoundKey].Spawns[data.spawnIndex]
+
+        if spawnCoords and ESX.CreateVehicle(data.vehicleId, spawnCoords, spawnCoords?.w, true) then
+            xPlayer.showNotification("Vehicle spawned!", "success")
+        end
+    else
+        xPlayer.showNotification(("Vehicle %s (%s) transferred to %s!"):format(data.vehicleName, vehicleData.plate, Config.Garages[data.garage]?.Label), "success")
+    end
+end)

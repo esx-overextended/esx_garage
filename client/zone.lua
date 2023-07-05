@@ -1,7 +1,7 @@
-local zone, garageZones, hasInitialized = {}, {}, false
+local zone, garageZones, impoundZones = {}, {}, {}
 
 function zone.configureRadialMenu(action, data)
-    if not data.RadialMenu and not Config.RadialMenu then return end
+    if not data.garageKey or not data.RadialMenu and not Config.RadialMenu then return end
 
     if action == "enter" then
         RadialMenu.addItem(data.garageKey)
@@ -11,6 +11,8 @@ function zone.configureRadialMenu(action, data)
 end
 
 function zone.configureVehicle(action, data)
+    if not data.garageKey then return end
+
     if action == "enter" then
         garageZones[data.garageKey].vehicleTargetId = Target.addVehicle(data.garageKey)
     elseif action == "exit" then
@@ -22,19 +24,24 @@ function zone.configureVehicle(action, data)
 end
 
 function zone.configurePed(action, data)
-    local garageData = Config.Garages[data.garageKey]
+    local zoneData = Config.Garages[data.garageKey] or Config.Impounds[data.impoundKey]
+
+    if not zoneData or not zoneData?.Peds then return end
+
+    local zoneKey = data.garageKey or data.impoundKey
+    local zoneTable = data.garageKey and garageZones or data.impoundKey and impoundZones
 
     if action == "enter" then
-        for i = 1, #garageData.Peds do
-            local ped = garageData.Peds[i]
+        for i = 1, #zoneData.Peds do
+            local ped = zoneData.Peds[i]
             local pedModel = ped.Model or Config.DefaultPed --[[@as number | string]]
             pedModel = type(pedModel) == "string" and joaat(pedModel) or pedModel --[[@as number]]
 
-            lib.requestModel(pedModel)
+            lib.requestModel(pedModel, 1000)
 
             local pedEntity = CreatePed(0, pedModel, ped.Coords.x, ped.Coords.y, ped.Coords.z, ped.Coords.w, false, true)
 
-            SetPedFleeAttributes(pedEntity, 2, true) -- TODO: test for true or false...
+            SetPedFleeAttributes(pedEntity, 2, true)
             SetBlockingOfNonTemporaryEvents(pedEntity, true)
             SetPedCanRagdollFromPlayerImpact(pedEntity, false)
             SetPedDiesWhenInjured(pedEntity, false)
@@ -42,22 +49,22 @@ function zone.configurePed(action, data)
             SetEntityInvincible(pedEntity, true)
             SetPedCanPlayAmbientAnims(pedEntity, false)
 
-            if not garageZones[data.garageKey].pedEntities then garageZones[data.garageKey].pedEntities = {} end
+            if not zoneTable[zoneKey].pedEntities then zoneTable[zoneKey].pedEntities = {} end
 
-            garageZones[data.garageKey].pedEntities[#garageZones[data.garageKey].pedEntities + 1] = pedEntity
+            zoneTable[zoneKey].pedEntities[#zoneTable[zoneKey].pedEntities + 1] = pedEntity
         end
 
-        garageZones[data.garageKey].pedTargetId = Target.addPed(garageZones[data.garageKey].pedEntities, data.garageKey)
+        zoneTable[zoneKey].pedTargetId = Target.addPed(zoneTable[zoneKey].pedEntities, data)
     elseif action == "exit" then
-        local pedEntities = garageZones[data.garageKey].pedEntities
-        garageZones[data.garageKey].pedEntities = nil
+        local pedEntities = zoneTable[zoneKey].pedEntities
+        zoneTable[zoneKey].pedEntities = nil
 
         for i = 1, #pedEntities do
             DeletePed(pedEntities[i])
         end
 
-        local pedTargetId = garageZones[data.garageKey].pedTargetId
-        garageZones[data.garageKey].pedTargetId = nil
+        local pedTargetId = zoneTable[zoneKey].pedTargetId
+        zoneTable[zoneKey].pedTargetId = nil
 
         Target.removePed(pedEntities, pedTargetId)
     end
@@ -101,23 +108,58 @@ local function setupGarage(garageKey)
         onExit = onGarageZoneExit,
         garageKey = garageKey
     })
-    garageZones[garageKey] = { polyZone = polyZone, inRange = false, pedEntities = nil }
+    garageZones[garageKey] = { polyZone = polyZone, inRange = false, pedEntities = nil, vehicleTargetId = nil }
 
     -- createBlip(garageData)
 end
 
-local function initialize()
-    if hasInitialized then return end
-    hasInitialized = true
+local function onImpoundZoneEnter(data)
+    if impoundZones[data.impoundKey].inRange then return end
 
-    SetTimeout(1000, function()
-        for key in pairs(Config.Garages) do
-            setupGarage(key)
-        end
-    end)
+    impoundZones[data.impoundKey].inRange = true
+
+    if Config.Debug then print("entered impound zone ", data.impoundKey) end
+
+    configureZone("enter", data)
+    collectgarbage("collect")
 end
 
-do initialize() end
+local function onImpoundZoneExit(data)
+    if not impoundZones[data.impoundKey].inRange then return end
+
+    impoundZones[data.impoundKey].inRange = false
+
+    if Config.Debug then print("exited impound zone ", data.impoundKey) end
+
+    configureZone("exit", data)
+    collectgarbage("collect")
+end
+
+local function setupImpound(impoundKey)
+    local impoundData = Config.Impounds[impoundKey]
+    local polyZone = lib.zones.poly({
+        points = impoundData.Points,
+        thickness = impoundData.Thickness or 4,
+        debug = Config.Debug,
+        onEnter = onImpoundZoneEnter,
+        onExit = onImpoundZoneExit,
+        impoundKey = impoundKey
+    })
+    impoundZones[impoundKey] = { polyZone = polyZone, inRange = false, pedEntities = nil }
+
+    -- createBlip(impoundData)
+end
+
+-- initializing
+SetTimeout(1000, function()
+    for key in pairs(Config.Garages) do
+        setupGarage(key)
+    end
+
+    for key in pairs(Config.Impounds) do
+        setupImpound(key)
+    end
+end)
 
 ---@param garageKey string
 ---@return boolean
@@ -139,4 +181,14 @@ function IsCoordsInGarageZone(coords, garageKey)
     if not coords or not garageKey or not garageZones[garageKey] then return false end
 
     return garageZones[garageKey].polyZone:contains(coords)
+end
+
+---@param impoundKey string
+---@return boolean
+function IsPlayerInImpoundZone(impoundKey)
+    impoundKey = tostring(impoundKey) --[[@as string]]
+
+    if not impoundKey or not impoundZones[impoundKey] then return false end
+
+    return impoundZones[impoundKey].polyZone:contains(cache.coords)
 end
