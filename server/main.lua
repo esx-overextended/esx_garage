@@ -27,7 +27,7 @@ local sql = {
             `id` INT NOT NULL,
             `reason` LONGTEXT NULL,
             `note` LONGTEXT NULL,
-            `release_fee` INT NULL,
+            `release_fee` INT NOT NULL,
             `release_date` timestamp NOT NULL,
             `impounded_by` VARCHAR(60) NULL,
             `impounded_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
@@ -260,7 +260,7 @@ function ImpoundVehicle(data)
 
         if impounded_at then return false, "already_impounded" end
 
-        MySQL.insert.await("INSERT INTO `impounded_vehicles` VALUES (?, ?, ?, ?, ?, ?)", { xVehicle.id, data.reason, data.note, data.releaseFee, data.releaseDate, data.impoundedBy })
+        MySQL.insert.await("INSERT INTO `impounded_vehicles` VALUES (?, ?, ?, ?, ?, ?)", { xVehicle.id, data.reason, data.note, data.releaseFee or Config.ImpoundPrice, data.releaseDate, data.impoundedBy })
     end
 
     ESX.DeleteVehicle(data.entity)

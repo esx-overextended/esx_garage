@@ -64,3 +64,12 @@ function OnPlayerData(key)
 
     RadialMenu.removeItem()
 end
+
+---@param accountName string
+---@return string
+function GetIconForAccount(accountName)
+    if accountName == "money" then return "fa-solid fa-money-bill"
+    elseif accountName == "bank" then return "fa-solid fa-building-columns" end
+
+    return "fa-solid fa-money-check-dollar"
+end

@@ -6,6 +6,8 @@ Config.DefaultPed = `s_m_y_airworker`
 
 Config.TransferPrice = 1000
 
+Config.ImpoundPrice = 1000
+
 Config.RestoreVehicles = false
 
 Config.RadialMenu = true

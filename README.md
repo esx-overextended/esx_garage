@@ -3,8 +3,8 @@
 Works with [esx-overextended](https://github.com/esx-overextended/es_extended) **only**!
 
 TODO:
-- [ ] impound
-- [ ] society/job-owned garage
+- [x] impound
+- [x] society/job-owned garage
 - [ ] possibly being able to add garages on runtime from external resources through `exports`
 
 

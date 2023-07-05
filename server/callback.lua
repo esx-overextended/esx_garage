@@ -67,7 +67,7 @@ lib.callback.register("esx_garages:getImpoundedVehicles", function(source, impou
 
     local _type = type(Config.Impounds[impoundKey].Type)
     local currentImpoundTypes = _type == "string" and { Config.Impounds[impoundKey].Type } or _type == "table" and Config.Impounds[impoundKey].Type or {} --[[@as table]]
-    local query = [[SELECT ov.`id`, ov.`plate`, ov.`job`, ov.`model`, ov.`vehicle`, iv.*, CASE WHEN NOW() >= iv.`release_date` THEN 1 ELSE 0 END AS `is_release_date_passed`,
+    local query = [[SELECT ov.`id`, ov.`plate`, ov.`job`, ov.`model`, ov.`vehicle`, iv.`impounded_at`, iv.`release_fee`, CASE WHEN NOW() >= iv.`release_date` THEN 1 ELSE 0 END AS `is_release_date_passed`,
     TIMESTAMPDIFF(SECOND, NOW(), iv.`release_date`) AS `release_date_second_until`
     FROM `owned_vehicles` AS `ov`
     LEFT JOIN `impounded_vehicles` AS `iv` ON ov.`id` = iv.`id`
@@ -103,7 +103,7 @@ lib.callback.register("esx_garages:getImpoundedVehicles", function(source, impou
             local worldVehicle = worldVehicles[j]
             local worldVehiclePlate = GetVehicleNumberPlateText(worldVehicle)
 
-            if worldVehiclePlate == dbResult.plate or worldVehiclePlate == dbResult.vehicle?.plate then
+            if worldVehiclePlate == dbResult.vehicle?.plate or worldVehiclePlate == dbResult.plate then
                 if GetVehiclePetrolTankHealth(worldVehicle) <= 0 or GetVehicleBodyHealth(worldVehicle) <= 0 or GetVehicleEngineHealth(worldVehicle) <= 0 then
                     ESX.DeleteVehicle(worldVehicle)
                 else
@@ -140,8 +140,8 @@ lib.callback.register("esx_garages:getImpoundedVehicles", function(source, impou
             icon = GetIconForVehicleModel(dbResult.model),
             iconColor = not canReleaseVehicle and "red" or not canGetVehicle and "yellow" or "green",
             arrow = canReleaseVehicle and canGetVehicle,
-            event = canReleaseVehicle and canGetVehicle and "esx_garages:CHANGEME", -- TODO
-            args = { vehicleName = vehicleName, vehicleId = dbResult.id, plate = dbResult.plate, impoundKey = impoundKey },
+            event = canReleaseVehicle and canGetVehicle and "esx_garages:openImpoundConfirmation",
+            args = { vehicleName = vehicleName, vehicleId = dbResult.id, plate = dbResult.plate, impoundKey = impoundKey, releaseFee = dbResult.release_fee or Config.ImpoundPrice },
             metadata = contextMetadata
         }
 
