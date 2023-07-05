@@ -133,7 +133,7 @@ AddEventHandler("esx_garages:openImpoundConfirmation", function(data)
                 end
 
                 local garageToTransfer = lib.inputDialog(("Garage to transfer %s"):format(data.vehicleName), {
-                    { type = "select", label = ("Which garage should %s transfer to?"):format(data.vehicleName), icon = "fa-solid fa-warehouse", options = inputDialogOptions, required = true, clearable = false, }
+                    { type = "select", label = ("Which garage should %s transfer to?"):format(data.vehicleName), icon = "fa-solid fa-warehouse", options = inputDialogOptions, clearable = false, }
                 }, { allowCancel = true })
 
                 if not garageToTransfer then return lib.showContext("esx_garages:impoundConfirmation") end

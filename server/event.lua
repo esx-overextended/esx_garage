@@ -37,7 +37,7 @@ RegisterServerEvent("esx_garages:takeOutOwnedVehicle", function(data)
 
     if not spawnCoords then return xPlayer.showNotification("None of the spawn points are clear at the moment!") end
 
-    local xVehicle = ESX.CreateVehicle(data.vehicleId, spawnCoords)
+    local xVehicle = ESX.CreateVehicle(data.vehicleId, spawnCoords, spawnCoords.w)
 
     if not xVehicle then return end
 
