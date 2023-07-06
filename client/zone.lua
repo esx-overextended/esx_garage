@@ -1,7 +1,27 @@
 local zone, garageZones, impoundZones = {}, {}, {}
 
+local function createBlip(data)
+    local zoneData = Config.Garages[data.garageKey] or Config.Impounds[data.impoundKey]
+
+    if not zoneData or not zoneData.Blip or not zoneData.Blip.Active then return end
+
+    local blipCoords = zoneData.Coords or data.coords -- getting the blip coords from polyzone's centroid if not specifically indicated...
+    local blipName = ("%s_%s"):format(data.garageKey and "garage" or data.impoundKey and "impound", data.garageKey or data.impoundKey)
+    local blip = AddBlipForCoord(blipCoords.x, blipCoords.y, blipCoords.z)
+
+    SetBlipSprite(blip, zoneData.Blip.Type)
+    SetBlipScale(blip, zoneData.Blip.Size)
+    SetBlipColour(blip, zoneData.Blip.Color)
+    SetBlipAsShortRange(blip, true)
+    AddTextEntry(blipName, zoneData.Label)
+    BeginTextCommandSetBlipName(blipName)
+    EndTextCommandSetBlipName(blip)
+
+    return blip
+end
+
 function zone.configureRadialMenu(action, data)
-    if not data.garageKey or not data.RadialMenu and not Config.RadialMenu then return end
+    if not data.garageKey or (not Config.Garages[data.garageKey].RadialMenu and not Config.RadialMenu) then return end
 
     if action == "enter" then
         RadialMenu.addItem(data.garageKey)
@@ -108,9 +128,8 @@ local function setupGarage(garageKey)
         onExit = onGarageZoneExit,
         garageKey = garageKey
     })
-    garageZones[garageKey] = { polyZone = polyZone, inRange = false, pedEntities = nil, vehicleTargetId = nil }
 
-    -- createBlip(garageData)
+    garageZones[garageKey] = { polyZone = polyZone, blip = createBlip(polyZone), inRange = false, pedEntities = nil, vehicleTargetId = nil }
 end
 
 local function onImpoundZoneEnter(data)
@@ -145,9 +164,8 @@ local function setupImpound(impoundKey)
         onExit = onImpoundZoneExit,
         impoundKey = impoundKey
     })
-    impoundZones[impoundKey] = { polyZone = polyZone, inRange = false, pedEntities = nil }
 
-    -- createBlip(impoundData)
+    impoundZones[impoundKey] = { polyZone = polyZone, blip = createBlip(polyZone), inRange = false, pedEntities = nil }
 end
 
 -- initializing
@@ -191,4 +209,20 @@ function IsPlayerInImpoundZone(impoundKey)
     if not impoundKey or not impoundZones[impoundKey] then return false end
 
     return impoundZones[impoundKey].polyZone:contains(cache.coords)
+end
+
+function RefreshBlips()
+    for garageKey, garageData in pairs(Config.Garages) do
+        if DoesPlayerHaveAccessToGroup(garageData.Groups) then
+            if not garageZones[garageKey].blip then
+                garageZones[garageKey].blip = createBlip(garageZones[garageKey].polyZone)
+            end
+        else
+            if garageZones[garageKey].blip then
+                RemoveBlip(garageZones[garageKey].blip)
+
+                garageZones[garageKey].blip = nil
+            end
+        end
+    end
 end

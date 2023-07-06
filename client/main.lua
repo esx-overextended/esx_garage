@@ -56,6 +56,8 @@ end
 function OnPlayerData(key)
     if key ~= "job" and key ~= "groups" then return end
 
+    RefreshBlips()
+
     for garageKey in pairs(Config.Garages) do
         if IsPlayerInGarageZone(garageKey) then
             if RadialMenu.addItem(garageKey) then return end

@@ -1,6 +1,6 @@
 Config = {}
 
-Config.Debug = true
+Config.Debug = false
 
 Config.DefaultPed = `s_m_y_airworker`
 
@@ -17,6 +17,13 @@ Config.Garages = {
         Label = "Legion Garage",
         Type = "car",
         RadialMenu = nil, -- Can override Config.RadialMenu for this specific garage
+        Blip = {
+            Active = true,
+            Coords = nil, -- Can set specific coords for blip, otherwise the center of the polyzone points will be picked
+            Type = 357,
+            Size = 0.8,
+            Color = 2
+        },
         Peds = {
             { Model = nil, Coords = vector4(213.6, -809.6, 30.0, 340.1) },
             { Model = nil, Coords = vector4(225.4, -740.5, 33.2, 263.6) }
@@ -123,6 +130,13 @@ Config.Garages = {
         Type = "car",
         RadialMenu = nil, -- Can override Config.RadialMenu for this specific garage
         Groups = { "police" },
+        Blip = {
+            Active = true,
+            Coords = nil, -- Can set specific coords for blip, otherwise the center of the polyzone points will be picked
+            Type = 357,
+            Size = 0.8,
+            Color = 38
+        },
         Peds = {
             { Model = `S_M_Y_Cop_01`, Coords = vector4(441.214, -1013.074, 27.612, 186.823) }
         },
@@ -167,6 +181,12 @@ Config.Impounds = {
     ["city_impound"] = {
         Label = "City Vehicle Impound Lot",
         Type = "car",
+        Blip = {
+            Active = true,
+            Type = 357,
+            Size = 0.8,
+            Color = 1
+        },
         Peds = {
             { Model = nil, Coords = vector4(409.022, -1622.879, 28.291, 232.386) },
         },
