@@ -232,7 +232,8 @@ function GetIconForVehicleModel(vehicleModel)
     elseif modelType == "quadbike" then return "fa-solid fa-tricycle-adult"
     elseif modelType == "heli" then return "fa-solid fa-helicopter"
     elseif modelType == "plane" then return "fa-solid fa-plane"
-    elseif modelType == "trailer" then return "fa-solid fa-trailer" end
+    elseif modelType == "trailer" then return "fa-solid fa-trailer"
+    elseif modelType == "boat" then return "fa-solid fa-sailboat" end
 
     return "fa-solid fa-car" -- default icon
 end
