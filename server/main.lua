@@ -113,6 +113,8 @@ function GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
             contextOptions[count] = {
                 title = vehicleName,
                 description = contextDescription,
+                icon = GetIconForVehicleModel(dbResult.model, modelData.type),
+                iconColor = dbResult.impounded_at and "red" or not vehicles[count].stored and "yellow" or vehicles[count].garage ~= garageKey and "DodgerBlue" or "green",
                 arrow = vehicles[count].stored,
                 disabled = dbResult.impounded_at ~= nil,
                 event = vehicles[count].stored and "esx_garages:openVehicleMenu",
@@ -224,8 +226,8 @@ end
 
 ---@param vehicleModel string
 ---@return string
-function GetIconForVehicleModel(vehicleModel)
-    local modelType = ESX.GetVehicleData(vehicleModel)?.type
+function GetIconForVehicleModel(vehicleModel, modelType)
+    modelType = modelType or ESX.GetVehicleData(vehicleModel)?.type
 
     if modelType == "automobile" then return "fa-solid fa-car"
     elseif modelType == "bike" then return "fa-solid fa-motorcycle"

@@ -5,8 +5,13 @@ lib.callback.register("esx_garages:getOwnedVehicles", function(source, garageKey
 
     if not IsPlayerInGarageZone(xPlayer.source, garageKey) or not IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey) then return CheatDetected(xPlayer.source) end
 
-    local query = "SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage`, iv.`impounded_at` FROM `owned_vehicles` AS ov LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id` WHERE ov.`owner` = ? AND ov.`type` = ? AND ov.`job` IS NULL"
-    local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier(), Config.Garages[garageKey].Type })
+    local _type = type(Config.Garages[garageKey].Type)
+    local currentGarageTypes = _type == "string" and { Config.Garages[garageKey].Type } or _type == "table" and Config.Garages[garageKey].Type or {} --[[@as table]]
+    local query = string.format([[SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage`, iv.`impounded_at`
+    FROM `owned_vehicles` AS ov
+    LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id`
+    WHERE ov.`owner` = ? AND ov.`type` IN (%s) AND ov.`job` IS NULL]], ("'%s'"):format(table.concat(currentGarageTypes, "', '")))
+    local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier() })
 
     return GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
 end)
@@ -19,7 +24,6 @@ lib.callback.register("esx_garages:getSocietyVehicles", function(source, garageK
     if not IsPlayerInGarageZone(xPlayer.source, garageKey) or not IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey) or not Config.Garages[garageKey].Groups then return CheatDetected(xPlayer.source) end
 
     local currentGarageGroups = {}
-
     local _type = type(Config.Garages[garageKey].Groups)
 
     if _type == "string" then
@@ -38,8 +42,14 @@ lib.callback.register("esx_garages:getSocietyVehicles", function(source, garageK
 
     if not next(currentGarageGroups) then return print(("[^1ERROR^7] Mulfunctioned data for garage (^5%s^7) as per Player (^5%s^7) request. Expected groups but received nothing!"):format(garageKey, xPlayer.source)) end
 
-    local query = "SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage`, iv.`impounded_at` FROM `owned_vehicles` AS ov LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id` WHERE (ov.`owner` = ? OR ov.`owner` = '' OR ov.`owner` IS NULL) AND ov.`type` = ? AND ov.`job` IN (?)"
-    local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier(), Config.Garages[garageKey].Type, table.unpack(currentGarageGroups) })
+    _type = type(Config.Garages[garageKey].Type)
+    local currentGarageTypes = _type == "string" and { Config.Garages[garageKey].Type } or _type == "table" and Config.Garages[garageKey].Type or {} --[[@as table]]
+
+    local query = string.format([[SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage`, iv.`impounded_at`
+    FROM `owned_vehicles` AS ov 
+    LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id`
+    WHERE (ov.`owner` = ? OR ov.`owner` = '' OR ov.`owner` IS NULL) AND ov.`type` IN (%s) AND ov.`job` IN (%s)]], ("'%s'"):format(table.concat(currentGarageTypes, "', '")), ("'%s'"):format(table.concat(currentGarageGroups, "', '")))
+    local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier() })
 
     return GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
 end)
@@ -67,12 +77,12 @@ lib.callback.register("esx_garages:getImpoundedVehicles", function(source, impou
 
     local _type = type(Config.Impounds[impoundKey].Type)
     local currentImpoundTypes = _type == "string" and { Config.Impounds[impoundKey].Type } or _type == "table" and Config.Impounds[impoundKey].Type or {} --[[@as table]]
-    local query = [[SELECT ov.`id`, ov.`plate`, ov.`job`, ov.`model`, ov.`vehicle`, iv.`impounded_at`, iv.`release_fee`, CASE WHEN NOW() >= iv.`release_date` THEN 1 ELSE 0 END AS `is_release_date_passed`,
+    local query = string.format([[SELECT ov.`id`, ov.`plate`, ov.`job`, ov.`model`, ov.`vehicle`, iv.`impounded_at`, iv.`release_fee`, CASE WHEN NOW() >= iv.`release_date` THEN 1 ELSE 0 END AS `is_release_date_passed`,
     TIMESTAMPDIFF(SECOND, NOW(), iv.`release_date`) AS `release_date_second_until`
     FROM `owned_vehicles` AS `ov`
     LEFT JOIN `impounded_vehicles` AS `iv` ON ov.`id` = iv.`id`
-    WHERE (ov.`owner` = ? or ov.`owner` IS NULL or ov.`owner` = "") AND ov.`type` IN (?) AND ov.`stored` != 1]]
-    local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier(), table.unpack(currentImpoundTypes) })
+    WHERE (ov.`owner` = ? or ov.`owner` IS NULL or ov.`owner` = "") AND ov.`type` IN (%s) AND ov.`stored` != 1]], ("'%s'"):format(table.concat(currentImpoundTypes, "', '")))
+    local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier() })
 
     local vehicles, contextOptions, count = {}, {}, 0
     local worldVehicles = GetAllVehicles()
@@ -137,7 +147,7 @@ lib.callback.register("esx_garages:getImpoundedVehicles", function(source, impou
         contextOptions[count] = {
             title = vehicleName,
             description = contextDescription,
-            icon = GetIconForVehicleModel(dbResult.model),
+            icon = GetIconForVehicleModel(dbResult.model, modelData.type),
             iconColor = not canReleaseVehicle and "red" or not canGetVehicle and "yellow" or "green",
             arrow = canReleaseVehicle and canGetVehicle,
             event = canReleaseVehicle and canGetVehicle and "esx_garages:openImpoundConfirmation",
