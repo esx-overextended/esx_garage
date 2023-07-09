@@ -129,7 +129,7 @@ local function setupGarage(garageKey)
         garageKey = garageKey
     })
 
-    garageZones[garageKey] = { polyZone = polyZone, blip = createBlip(polyZone), inRange = false, pedEntities = nil, vehicleTargetId = nil }
+    garageZones[garageKey] = { polyZone = polyZone, blip = nil, inRange = false, pedEntities = nil, vehicleTargetId = nil }
 end
 
 local function onImpoundZoneEnter(data)
@@ -165,7 +165,7 @@ local function setupImpound(impoundKey)
         impoundKey = impoundKey
     })
 
-    impoundZones[impoundKey] = { polyZone = polyZone, blip = createBlip(polyZone), inRange = false, pedEntities = nil }
+    impoundZones[impoundKey] = { polyZone = polyZone, blip = nil, inRange = false, pedEntities = nil }
 end
 
 -- initializing

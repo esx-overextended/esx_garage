@@ -1,3 +1,18 @@
+local function onLoad()
+    Wait(1000)
+
+    if ESX.IsPlayerLoaded() then RefreshBlips() end
+end
+
+AddEventHandler("esx:playerLoaded", onLoad)
+
+local function onResourceStart(resource)
+    return resource == cache.resource and onLoad()
+end
+
+AddEventHandler("ontResourceStart", onResourceStart)
+AddEventHandler("onClientResourceStart", onResourceStart)
+
 AddEventHandler("esx_garage:openGarageMenu", function(data)
     if not IsPlayerInGarageZone(data?.garageKey) or not IsPlayerAuthorizedToAccessGarage(data?.garageKey) then return print("[^1ERROR^7] You are NOT authorized to access this garage at the moment!") end
 
