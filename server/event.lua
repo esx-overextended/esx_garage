@@ -108,7 +108,7 @@ RegisterServerEvent("esx_garage:removeVehicleFromImpound", function(data)
     local query = string.format([[SELECT ov.`owner`, ov.`plate`, ov.`job`, iv.`release_fee`
     FROM `owned_vehicles` AS `ov`
     LEFT JOIN `impounded_vehicles` AS `iv` ON ov.`id` = iv.`id`
-    WHERE ov.`id` = ? AND ov.`type` IN (%s) AND ov.`stored` != 1 AND (iv.`release_date` IS NULL OR NOW() >= iv.`release_date`)]], ("'%s'"):format(table.concat(currentImpoundTypes, "', '")))
+    WHERE ov.`id` = ? AND ov.`type` IN (%s) AND (ov.`stored` = 0 or ov.`stored` IS NULL) AND (iv.`release_date` IS NULL OR NOW() >= iv.`release_date`)]], ("'%s'"):format(table.concat(currentImpoundTypes, "', '")))
     local vehicleData = MySQL.single.await(query, { data.vehicleId })
 
     if not vehicleData or (vehicleData.owner ~= xPlayer.getIdentifier() and not DoesPlayerHaveAccessToGroup(xPlayer, vehicleData.job)) or (vehicleData.release_fee and xPlayer.getAccount(data.account)?.money < vehicleData.release_fee) then return CheatDetected(xPlayer.source) end

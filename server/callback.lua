@@ -81,7 +81,7 @@ lib.callback.register("esx_garage:getImpoundedVehicles", function(source, impoun
     TIMESTAMPDIFF(SECOND, NOW(), iv.`release_date`) AS `release_date_second_until`
     FROM `owned_vehicles` AS `ov`
     LEFT JOIN `impounded_vehicles` AS `iv` ON ov.`id` = iv.`id`
-    WHERE (ov.`owner` = ? or ov.`owner` IS NULL or ov.`owner` = "") AND ov.`type` IN (%s) AND ov.`stored` != 1]], ("'%s'"):format(table.concat(currentImpoundTypes, "', '")))
+    WHERE (ov.`owner` = ? or ov.`owner` IS NULL or ov.`owner` = "") AND ov.`type` IN (%s) AND (ov.`stored` = 0 or ov.`stored` IS NULL)]], ("'%s'"):format(table.concat(currentImpoundTypes, "', '")))
     local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier() })
 
     local vehicles, contextOptions, count = {}, {}, 0
@@ -111,7 +111,7 @@ lib.callback.register("esx_garage:getImpoundedVehicles", function(source, impoun
 
         for j = 1, worldVehiclesCount do
             local worldVehicle = worldVehicles[j]
-            local worldVehiclePlate = GetVehicleNumberPlateText(worldVehicle)
+            local worldVehiclePlate = ESX.Math.Trim(GetVehicleNumberPlateText(worldVehicle))
 
             if worldVehiclePlate == dbResult.vehicle?.plate or worldVehiclePlate == dbResult.plate then
                 if GetVehiclePetrolTankHealth(worldVehicle) <= 0 or GetVehicleBodyHealth(worldVehicle) <= 0 or GetVehicleEngineHealth(worldVehicle) <= 0 then
