@@ -1,35 +1,35 @@
-AddEventHandler("esx_garages:openGarageMenu", function(data)
+AddEventHandler("esx_garage:openGarageMenu", function(data)
     if not IsPlayerInGarageZone(data?.garageKey) or not IsPlayerAuthorizedToAccessGarage(data?.garageKey) then return print("[^1ERROR^7] You are NOT authorized to access this garage at the moment!") end
 
-    local vehicles, contextOptions = lib.callback.await(not Config.Garages[data.garageKey].Groups and "esx_garages:getOwnedVehicles" or "esx_garages:getSocietyVehicles", false, data.garageKey)
+    local vehicles, contextOptions = lib.callback.await(not Config.Garages[data.garageKey].Groups and "esx_garage:getOwnedVehicles" or "esx_garage:getSocietyVehicles", false, data.garageKey)
 
     lib.registerContext({
-        id = "esx_garages:garageMenu",
+        id = "esx_garage:garageMenu",
         title = Config.Garages[data.garageKey]?.Label,
         options = vehicles and contextOptions
     })
 
-    return lib.showContext("esx_garages:garageMenu")
+    return lib.showContext("esx_garage:garageMenu")
 end)
 
-AddEventHandler("esx_garages:openVehicleMenu", function(data)
+AddEventHandler("esx_garage:openVehicleMenu", function(data)
     if not IsPlayerInGarageZone(data?.garageKey) or not IsPlayerAuthorizedToAccessGarage(data?.garageKey) then return print("[^1ERROR^7] You are NOT authorized to access this garage at the moment!") end
 
     local canTakeoutVehicle = data.storedGarage == data.garageKey
 
     lib.registerContext({
-        id = "esx_garages:vehicleMenu",
+        id = "esx_garage:vehicleMenu",
         title = data.vehicleName,
-        menu = "esx_garages:garageMenu",
+        menu = "esx_garage:garageMenu",
         options = {
             {
                 title = "Transfer vehicle to this garage",
-                event = "esx_garages:openGarageMenu",
+                event = "esx_garage:openGarageMenu",
                 args = data,
                 arrow = not canTakeoutVehicle,
                 disabled = canTakeoutVehicle,
                 onSelect = function()
-                    lib.callback.await("esx_garages:transferVehicle", false, data)
+                    lib.callback.await("esx_garage:transferVehicle", false, data)
                 end
             },
             {
@@ -61,16 +61,16 @@ AddEventHandler("esx_garages:openVehicleMenu", function(data)
                         end
                     end
 
-                    TriggerServerEvent("esx_garages:takeOutOwnedVehicle", data)
+                    TriggerServerEvent("esx_garage:takeOutOwnedVehicle", data)
                 end
             },
         }
     })
 
-    return lib.showContext("esx_garages:vehicleMenu")
+    return lib.showContext("esx_garage:vehicleMenu")
 end)
 
-AddEventHandler("esx_garages:storeOwnedVehicle", function(data)
+AddEventHandler("esx_garage:storeOwnedVehicle", function(data)
     if not IsCoordsInGarageZone(GetEntityCoords(data?.entity), data?.garageKey) then return end
 
     if not IsPlayerInGarageZone(data?.garageKey) or not IsPlayerAuthorizedToAccessGarage(data?.garageKey) then return print("[^1ERROR^7] You are NOT authorized to access this garage at the moment!") end
@@ -78,24 +78,24 @@ AddEventHandler("esx_garages:storeOwnedVehicle", function(data)
     data.netId = NetworkGetNetworkIdFromEntity(data.entity)
     data.properties = ESX.Game.GetVehicleProperties(data.entity)
 
-    TriggerServerEvent("esx_garages:storeOwnedVehicle", data)
+    TriggerServerEvent("esx_garage:storeOwnedVehicle", data)
 end)
 
-AddEventHandler("esx_garages:openImpoundMenu", function(data)
+AddEventHandler("esx_garage:openImpoundMenu", function(data)
     if not IsPlayerInImpoundZone(data?.impoundKey) then return print("[^1ERROR^7] You are NOT authorized to access this impound at the moment!") end
 
-    local vehicles, contextOptions = lib.callback.await("esx_garages:getImpoundedVehicles", false, data.impoundKey)
+    local vehicles, contextOptions = lib.callback.await("esx_garage:getImpoundedVehicles", false, data.impoundKey)
 
     lib.registerContext({
-        id = "esx_garages:impoundMenu",
+        id = "esx_garage:impoundMenu",
         title = Config.Impounds[data.impoundKey]?.Label,
         options = vehicles and contextOptions
     })
 
-    return lib.showContext("esx_garages:impoundMenu")
+    return lib.showContext("esx_garage:impoundMenu")
 end)
 
-AddEventHandler("esx_garages:openImpoundConfirmation", function(data)
+AddEventHandler("esx_garage:openImpoundConfirmation", function(data)
     if not IsPlayerInImpoundZone(data?.impoundKey) then return print("[^1ERROR^7] You are NOT authorized to access this impound at the moment!") end
 
     local accounts, options = { ["bank"] = true, ["money"] = true }, {}
@@ -136,7 +136,7 @@ AddEventHandler("esx_garages:openImpoundConfirmation", function(data)
                     { type = "select", label = ("Which garage should %s transfer to?"):format(data.vehicleName), icon = "fa-solid fa-warehouse", options = inputDialogOptions, clearable = false, }
                 }, { allowCancel = true })
 
-                if not garageToTransfer then return lib.showContext("esx_garages:impoundConfirmation") end
+                if not garageToTransfer then return lib.showContext("esx_garage:impoundConfirmation") end
 
                 data.garage = garageToTransfer[1]
                 data.account = account?.name
@@ -149,20 +149,20 @@ AddEventHandler("esx_garages:openImpoundConfirmation", function(data)
                         end
                     end
 
-                    if not data.spawnIndex then ESX.ShowNotification("None of the spawn points are clear at the moment!") return lib.showContext("esx_garages:impoundConfirmation") end
+                    if not data.spawnIndex then ESX.ShowNotification("None of the spawn points are clear at the moment!") return lib.showContext("esx_garage:impoundConfirmation") end
                 end
 
-                TriggerServerEvent("esx_garages:removeVehicleFromImpound", data)
+                TriggerServerEvent("esx_garage:removeVehicleFromImpound", data)
             end
         }
     end
 
     lib.registerContext({
-        id = "esx_garages:impoundConfirmation",
+        id = "esx_garage:impoundConfirmation",
         title = data.vehicleName,
-        menu = "esx_garages:impoundMenu",
+        menu = "esx_garage:impoundMenu",
         options = options
     })
 
-    return lib.showContext("esx_garages:impoundConfirmation")
+    return lib.showContext("esx_garage:impoundConfirmation")
 end)

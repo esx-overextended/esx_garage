@@ -3,7 +3,7 @@ use_experimental_fxv2_oal "yes"
 lua54 "yes"
 game "gta5"
 
-name "esx_garages"
+name "esx_garage"
 version "0.0.0"
 description "ESX-Overextended Garages"
 

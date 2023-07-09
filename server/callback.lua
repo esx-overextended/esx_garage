@@ -1,4 +1,4 @@
-lib.callback.register("esx_garages:getOwnedVehicles", function(source, garageKey)
+lib.callback.register("esx_garage:getOwnedVehicles", function(source, garageKey)
     local xPlayer = ESX.GetPlayerFromId(source)
 
     if not xPlayer then return end
@@ -16,7 +16,7 @@ lib.callback.register("esx_garages:getOwnedVehicles", function(source, garageKey
     return GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
 end)
 
-lib.callback.register("esx_garages:getSocietyVehicles", function(source, garageKey)
+lib.callback.register("esx_garage:getSocietyVehicles", function(source, garageKey)
     local xPlayer = ESX.GetPlayerFromId(source)
 
     if not xPlayer then return end
@@ -54,7 +54,7 @@ lib.callback.register("esx_garages:getSocietyVehicles", function(source, garageK
     return GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
 end)
 
-lib.callback.register("esx_garages:transferVehicle", function(source, data)
+lib.callback.register("esx_garage:transferVehicle", function(source, data)
     local xPlayer = ESX.GetPlayerFromId(source)
 
     if not xPlayer or type(data) ~= "table" then return end
@@ -68,7 +68,7 @@ lib.callback.register("esx_garages:transferVehicle", function(source, data)
     return MySQL.update.await("UPDATE `owned_vehicles` SET `garage` = ? WHERE `id` = ? AND `owner` = ?", { data.garageKey, data.vehicleId, xPlayer.getIdentifier() })
 end)
 
-lib.callback.register("esx_garages:getImpoundedVehicles", function(source, impoundKey)
+lib.callback.register("esx_garage:getImpoundedVehicles", function(source, impoundKey)
     local xPlayer = ESX.GetPlayerFromId(source)
 
     if not xPlayer then return end
@@ -150,7 +150,7 @@ lib.callback.register("esx_garages:getImpoundedVehicles", function(source, impou
             icon = GetIconForVehicleModel(dbResult.model, modelData.type),
             iconColor = not canReleaseVehicle and "red" or not canGetVehicle and "yellow" or "green",
             arrow = canReleaseVehicle and canGetVehicle,
-            event = canReleaseVehicle and canGetVehicle and "esx_garages:openImpoundConfirmation",
+            event = canReleaseVehicle and canGetVehicle and "esx_garage:openImpoundConfirmation",
             args = { vehicleName = vehicleName, vehicleId = dbResult.id, plate = dbResult.plate, impoundKey = impoundKey, releaseFee = dbResult.release_fee or Config.ImpoundPrice },
             metadata = contextMetadata
         }

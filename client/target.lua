@@ -8,7 +8,7 @@ function Target.addVehicle(garageKey)
             name = optionId,
             label = "Store Vehicle",
             icon = "fa-solid fa-parking",
-            event = "esx_garages:storeOwnedVehicle",
+            event = "esx_garage:storeOwnedVehicle",
             distance = 4,
             groups = Config.Garages[garageKey].Groups,
             canInteract = function()
@@ -33,7 +33,7 @@ function Target.addPed(entity, data)
             name = optionId,
             label = data.garageKey and "Open Garage" or data.impoundKey and "Open Impound",
             icon = data.garageKey and "fa-solid fa-warehouse" or data.impoundKey and "fa-solid fa-key",
-            event = data.garageKey and "esx_garages:openGarageMenu" or data.impoundKey and "esx_garages:openImpoundMenu",
+            event = data.garageKey and "esx_garage:openGarageMenu" or data.impoundKey and "esx_garage:openImpoundMenu",
             distance = 4,
             groups = Config.Garages[data.garageKey]?.Groups,
             canInteract = function()

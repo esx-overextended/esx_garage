@@ -117,7 +117,7 @@ function GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
                 iconColor = dbResult.impounded_at and "red" or not vehicles[count].stored and "yellow" or vehicles[count].garage ~= garageKey and "DodgerBlue" or "green",
                 arrow = vehicles[count].stored,
                 disabled = dbResult.impounded_at ~= nil,
-                event = vehicles[count].stored and "esx_garages:openVehicleMenu",
+                event = vehicles[count].stored and "esx_garage:openVehicleMenu",
                 args = { vehicleName = vehicleName, vehicleId = dbResult.id, plate = dbResult.plate, storedGarage = dbResult.garage, garageKey = garageKey },
                 metadata = contextMetadata
             }

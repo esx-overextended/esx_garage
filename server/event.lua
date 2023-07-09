@@ -1,4 +1,4 @@
-RegisterServerEvent("esx_garages:takeOutOwnedVehicle", function(data)
+RegisterServerEvent("esx_garage:takeOutOwnedVehicle", function(data)
     local xPlayer = ESX.GetPlayerFromId(source)
 
     if not xPlayer or type(data) ~= "table" then return end
@@ -48,7 +48,7 @@ RegisterServerEvent("esx_garages:takeOutOwnedVehicle", function(data)
     ApplyFuelToVehicle(xVehicle.entity, vehicleData.vehicle?.fuelLevel)
 end)
 
-RegisterServerEvent("esx_garages:storeOwnedVehicle", function(data)
+RegisterServerEvent("esx_garage:storeOwnedVehicle", function(data)
     local xPlayer = ESX.GetPlayerFromId(source)
 
     if not xPlayer or type(data) ~= "table" then return end
@@ -96,7 +96,7 @@ RegisterServerEvent("esx_garages:storeOwnedVehicle", function(data)
     xPlayer.showNotification("Vehicle stored!", "success")
 end)
 
-RegisterServerEvent("esx_garages:removeVehicleFromImpound", function(data)
+RegisterServerEvent("esx_garage:removeVehicleFromImpound", function(data)
     local xPlayer = ESX.GetPlayerFromId(source)
 
     if not xPlayer or type(data) ~= "table" then return end

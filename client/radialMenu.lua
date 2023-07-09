@@ -10,7 +10,7 @@ local function registerRadialMenu(seatState)
         onSelect = function()
             for garageKey in pairs(Config.Garages) do
                 if IsPlayerInGarageZone(garageKey) then
-                    TriggerEvent("esx_garages:openGarageMenu", { garageKey = garageKey })
+                    TriggerEvent("esx_garage:openGarageMenu", { garageKey = garageKey })
                     break
                 end
             end
@@ -24,7 +24,7 @@ local function registerRadialMenu(seatState)
             onSelect = function()
                 for garageKey in pairs(Config.Garages) do
                     if IsPlayerInGarageZone(garageKey) then
-                        TriggerServerEvent("esx_garages:storeOwnedVehicle", { netId = NetworkGetNetworkIdFromEntity(cache.vehicle), garageKey = garageKey, properties = ESX.Game.GetVehicleProperties(cache.vehicle) })
+                        TriggerServerEvent("esx_garage:storeOwnedVehicle", { netId = NetworkGetNetworkIdFromEntity(cache.vehicle), garageKey = garageKey, properties = ESX.Game.GetVehicleProperties(cache.vehicle) })
                         break
                     end
                 end

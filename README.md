@@ -1,4 +1,4 @@
-# esx_garages
+# esx_garage
 
 Works with [esx-overextended](https://github.com/esx-overextended/es_extended) **only**!
 
