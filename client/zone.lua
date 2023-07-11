@@ -94,6 +94,8 @@ local function configureZone(action, data)
     for functionName in pairs(zone) do
         zone[functionName](action, data)
     end
+
+    collectgarbage("collect")
 end
 
 local function onGarageZoneEnter(data)
@@ -104,7 +106,6 @@ local function onGarageZoneEnter(data)
     if Config.Debug then print("entered garage zone ", data.garageKey) end
 
     configureZone("enter", data)
-    collectgarbage("collect")
 end
 
 local function onGarageZoneExit(data)
@@ -115,7 +116,6 @@ local function onGarageZoneExit(data)
     if Config.Debug then print("exited garage zone ", data.garageKey) end
 
     configureZone("exit", data)
-    collectgarbage("collect")
 end
 
 local function setupGarage(garageKey)
@@ -140,7 +140,6 @@ local function onImpoundZoneEnter(data)
     if Config.Debug then print("entered impound zone ", data.impoundKey) end
 
     configureZone("enter", data)
-    collectgarbage("collect")
 end
 
 local function onImpoundZoneExit(data)
@@ -151,7 +150,6 @@ local function onImpoundZoneExit(data)
     if Config.Debug then print("exited impound zone ", data.impoundKey) end
 
     configureZone("exit", data)
-    collectgarbage("collect")
 end
 
 local function setupImpound(impoundKey)
@@ -165,7 +163,7 @@ local function setupImpound(impoundKey)
         impoundKey = impoundKey
     })
 
-    impoundZones[impoundKey] = { polyZone = polyZone, blip = nil, inRange = false, pedEntities = nil }
+    impoundZones[impoundKey] = { polyZone = polyZone, blip = createBlip(polyZone), inRange = false, pedEntities = nil }
 end
 
 -- initializing
