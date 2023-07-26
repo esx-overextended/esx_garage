@@ -89,8 +89,8 @@ RegisterServerEvent("esx_garage:storeOwnedVehicle", function(data)
     end
 
     if currentGarage.Type then
-        canStoreVehicleHere = false
-        local currentVehicleType = ESX.GetVehicleData(xVehicle.model)?.type
+        local canStoreVehicleHere = false
+        local currentVehicleType = GetBackwardCompatibleVehicleType(ESX.GetVehicleData(xVehicle.model)?.type)
 
         for i = 1, #currentGarage.Type do
             if currentVehicleType == currentGarage.Type[i] then

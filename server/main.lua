@@ -66,7 +66,10 @@ function GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
                 end
             end
 
-            if not dbResult.model then print(("[^3WARNING^7] Vehicle hash (^1%s^7) for ID (^5%s^7) is invalid \nEnsure vehicle exists in ^2'@es_extended/files/vehicles.json'^7"):format(dbResult.vehicle?.model, dbResult.id)) goto skipLoop end
+            if not dbResult.model then
+                print(("[^3WARNING^7] Vehicle hash (^1%s^7) for ID (^5%s^7) is invalid \nEnsure vehicle exists in ^2'@es_extended/files/vehicles.json'^7"):format(dbResult.vehicle?.model, dbResult.id))
+                goto skipLoop
+            end
 
             count += 1
             vehicles[count] = {
@@ -229,15 +232,38 @@ end
 function GetIconForVehicleModel(vehicleModel, modelType)
     modelType = modelType or ESX.GetVehicleData(vehicleModel)?.type
 
-    if modelType == "automobile" then return "fa-solid fa-car"
-    elseif modelType == "bike" then return "fa-solid fa-motorcycle"
-    elseif modelType == "quadbike" then return "fa-solid fa-tricycle-adult"
-    elseif modelType == "heli" then return "fa-solid fa-helicopter"
-    elseif modelType == "plane" then return "fa-solid fa-plane"
-    elseif modelType == "trailer" then return "fa-solid fa-trailer"
-    elseif modelType == "boat" then return "fa-solid fa-sailboat" end
+    if modelType == "automobile" then
+        return "fa-solid fa-car"
+    elseif modelType == "bike" then
+        return "fa-solid fa-motorcycle"
+    elseif modelType == "quadbike" then
+        return "fa-solid fa-tricycle-adult"
+    elseif modelType == "bicycle" then
+        return "fa-solid fa-bicycle"
+    elseif modelType == "heli" then
+        return "fa-solid fa-helicopter"
+    elseif modelType == "plane" then
+        return "fa-solid fa-plane"
+    elseif modelType == "trailer" then
+        return "fa-solid fa-trailer"
+    elseif modelType == "boat" then
+        return "fa-solid fa-sailboat"
+    end
 
     return "fa-solid fa-car" -- default icon
+end
+
+---Gets a vehicle type based on esx-legacy (used in DB column to keep backward-compatibility)
+---@param vehicleType string
+---@return string
+function GetBackwardCompatibleVehicleType(vehicleType)
+    if vehicleType == "automobile" then
+        return "car"
+    elseif vehicleType == "quadbike" then
+        return "bike"
+    end
+
+    return vehicleType
 end
 
 ---@class CImpoundData
