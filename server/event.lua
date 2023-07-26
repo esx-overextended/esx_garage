@@ -58,7 +58,8 @@ RegisterServerEvent("esx_garage:storeOwnedVehicle", function(data)
 
     if not xVehicle or (xVehicle.owner ~= xPlayer.getIdentifier() and xVehicle.group ~= xPlayer.getJob()?.name and not xPlayer.hasGroup(xVehicle.group)) then return xPlayer.showNotification("You cannot store this vehicle!", "error") end
 
-    local currentGarageGroups = Config.Garages[data.garageKey].Groups
+    local currentGarage = Config.Garages[data.garageKey]
+    local currentGarageGroups = currentGarage.Groups
 
     if currentGarageGroups or xVehicle.group then
         local canStoreVehicleHere = false
@@ -67,15 +68,15 @@ RegisterServerEvent("esx_garage:storeOwnedVehicle", function(data)
         if _type == "string" then
             canStoreVehicleHere = xVehicle.group == currentGarageGroups
         elseif _type == "table" then
-            if table.type(Config.Garages[data.garageKey].Groups) == "array" then
-                for i = 1, #Config.Garages[data.garageKey].Groups do
-                    if xVehicle.group == Config.Garages[data.garageKey].Groups[i] then
+            if table.type(currentGarageGroups) == "array" then
+                for i = 1, #currentGarageGroups do
+                    if xVehicle.group == currentGarageGroups[i] then
                         canStoreVehicleHere = true
                         break
                     end
                 end
             else
-                for groupName in pairs(Config.Garages[data.garageKey].Groups) do
+                for groupName in pairs(currentGarageGroups) do
                     if xVehicle.group == groupName then
                         canStoreVehicleHere = true
                         break
@@ -85,6 +86,20 @@ RegisterServerEvent("esx_garage:storeOwnedVehicle", function(data)
         end
 
         if not canStoreVehicleHere then return xPlayer.showNotification("You cannot store this vehicle here in this garage!", "error") end
+    end
+
+    if currentGarage.Type then
+        canStoreVehicleHere = false
+        local currentVehicleType = ESX.GetVehicleData(xVehicle.model)?.type
+
+        for i = 1, #currentGarage.Type do
+            if currentVehicleType == currentGarage.Type[i] then
+                canStoreVehicleHere = true
+                break
+            end
+        end
+
+        if not canStoreVehicleHere then return xPlayer.showNotification("You cannot store this type of vehicle here in this garage!", "error") end
     end
 
     if not IsCoordsInGarageZone(xVehicle.getCoords(true), data.garageKey) or not IsPlayerAuthorizedToAccessGarage(xPlayer, data.garageKey) or GetEntityModel(entity) ~= data.properties?.model then return CheatDetected(xPlayer.source) end
@@ -111,7 +126,10 @@ RegisterServerEvent("esx_garage:removeVehicleFromImpound", function(data)
     WHERE ov.`id` = ? AND ov.`type` IN (%s) AND (ov.`stored` = 0 or ov.`stored` IS NULL) AND (iv.`release_date` IS NULL OR NOW() >= iv.`release_date`)]], ("'%s'"):format(table.concat(currentImpoundTypes, "', '")))
     local vehicleData = MySQL.single.await(query, { data.vehicleId })
 
-    if not vehicleData or (vehicleData.owner ~= xPlayer.getIdentifier() and not DoesPlayerHaveAccessToGroup(xPlayer, vehicleData.job)) or (vehicleData.release_fee and xPlayer.getAccount(data.account)?.money < vehicleData.release_fee) then return CheatDetected(xPlayer.source) end
+    if not vehicleData or (vehicleData.owner ~= xPlayer.getIdentifier() and not DoesPlayerHaveAccessToGroup(xPlayer, vehicleData.job)) or (vehicleData.release_fee and xPlayer.getAccount(data.account)?.money < vehicleData.release_fee) then
+        return
+            CheatDetected(xPlayer.source)
+    end
 
     xPlayer.removeAccountMoney(data.account, vehicleData.release_fee or Config.ImpoundPrice, ("Transferring of %s vehicle (%s) to %s"):format(data.vehicleName, vehicleData.plate, Config.Garages[data.garage]?.Label))
 
