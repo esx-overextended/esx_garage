@@ -122,7 +122,8 @@ function GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
                 disabled = dbResult.impounded_at ~= nil,
                 event = vehicles[count].stored and "esx_garage:openVehicleMenu",
                 args = { vehicleName = vehicleName, vehicleId = dbResult.id, plate = dbResult.plate, storedGarage = dbResult.garage, garageKey = garageKey },
-                metadata = contextMetadata
+                metadata = contextMetadata,
+                image = modelData.image
             }
 
             ::skipLoop::

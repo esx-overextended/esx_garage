@@ -46,7 +46,7 @@ lib.callback.register("esx_garage:getSocietyVehicles", function(source, garageKe
     local currentGarageTypes = _type == "string" and { Config.Garages[garageKey].Type } or _type == "table" and Config.Garages[garageKey].Type or {} --[[@as table]]
 
     local query = string.format([[SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage`, iv.`impounded_at`
-    FROM `owned_vehicles` AS ov 
+    FROM `owned_vehicles` AS ov
     LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id`
     WHERE (ov.`owner` = ? OR ov.`owner` = '' OR ov.`owner` IS NULL) AND ov.`type` IN (%s) AND ov.`job` IN (%s)]], ("'%s'"):format(table.concat(currentGarageTypes, "', '")), ("'%s'"):format(table.concat(currentGarageGroups, "', '")))
     local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier() })
@@ -104,7 +104,10 @@ lib.callback.register("esx_garage:getImpoundedVehicles", function(source, impoun
             end
         end
 
-        if not dbResult.model then print(("[^3WARNING^7] Vehicle hash (^1%s^7) for ID (^5%s^7) is invalid \nEnsure vehicle exists in ^2'@es_extended/files/vehicles.json'^7"):format(dbResult.vehicle?.model, dbResult.id)) goto skipLoop end
+        if not dbResult.model then
+            print(("[^3WARNING^7] Vehicle hash (^1%s^7) for ID (^5%s^7) is invalid \nEnsure vehicle exists in ^2'@es_extended/files/vehicles.json'^7"):format(dbResult.vehicle?.model, dbResult.id))
+            goto skipLoop
+        end
 
         local canGetVehicle = true
         local canReleaseVehicle = (dbResult.impounded_at == nil and true) or dbResult.is_release_date_passed == 1
@@ -152,7 +155,8 @@ lib.callback.register("esx_garage:getImpoundedVehicles", function(source, impoun
             arrow = canReleaseVehicle and canGetVehicle,
             event = canReleaseVehicle and canGetVehicle and "esx_garage:openImpoundConfirmation",
             args = { vehicleName = vehicleName, vehicleId = dbResult.id, plate = dbResult.plate, impoundKey = impoundKey, releaseFee = dbResult.release_fee or Config.ImpoundPrice },
-            metadata = contextMetadata
+            metadata = contextMetadata,
+            image = modelData.image
         }
 
         ::skipLoop::
