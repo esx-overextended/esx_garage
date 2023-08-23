@@ -95,6 +95,25 @@ local function configureZone(action, data)
         zone[functionName](action, data)
     end
 
+    local zoneData = Config.Garages[data.garageKey] or Config.Impounds[data.impoundKey]
+    local shouldShowNotification = type(zoneData.NotifyOnZoneInteraction) ~= "boolean" and Config.NotifyOnZoneInteraction or zoneData.NotifyOnZoneInteraction
+
+    if shouldShowNotification then
+        lib.notify({
+            title = ("%s Zone"):format(action == "enter" and "Entered" or action == "exit" and "Exited"),
+            description = zoneData.Label,
+            position = "top",
+            duration = 4000,
+            style = {
+                backgroundColor = "#141517",
+                color = "#C1C2C5",
+                [".description"] = {
+                    color = "#909296"
+                }
+            },
+        })
+    end
+
     collectgarbage("collect")
 end
 
@@ -160,7 +179,8 @@ local function setupImpound(impoundKey)
         debug = Config.Debug,
         onEnter = onImpoundZoneEnter,
         onExit = onImpoundZoneExit,
-        impoundKey = impoundKey
+        impoundKey = impoundKey,
+        notifyOnZoneInteraction = impoundData.NotifyOnZoneInteraction == nil and Config.NotifyOnZoneInteraction or impoundData.NotifyOnZoneInteraction
     })
 
     impoundZones[impoundKey] = { polyZone = polyZone, blip = createBlip(polyZone), inRange = false, pedEntities = nil }

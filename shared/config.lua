@@ -12,11 +12,14 @@ Config.RestoreVehicles = false
 
 Config.RadialMenu = true
 
+Config.NotifyOnZoneInteraction = true
+
 Config.Garages = {
     ["legion"] = {
         Label = "Legion Garage",
         Type = { "car", "bike", "bicycle" },
-        RadialMenu = nil, -- Can override Config.RadialMenu for this specific garage
+        RadialMenu = nil,              -- Can override Config.RadialMenu for this specific garage
+        NotifyOnZoneInteraction = nil, -- Can override Config.NotifyOnZoneInteraction for this specific garage
         Blip = {
             Active = true,
             Coords = nil, -- Can set specific coords for blip, otherwise the center of the polyzone points will be picked
@@ -128,7 +131,8 @@ Config.Garages = {
     ["mrpd_car"] = {
         Label = "MRPD Garage",
         Type = { "car", "bike" },
-        RadialMenu = nil, -- Can override Config.RadialMenu for this specific garage
+        RadialMenu = nil,              -- Can override Config.RadialMenu for this specific garage
+        NotifyOnZoneInteraction = nil, -- Can override Config.NotifyOnZoneInteraction for this specific garage
         Groups = { "police" },
         Blip = {
             Active = true,
@@ -181,6 +185,7 @@ Config.Impounds = {
     ["city_impound"] = {
         Label = "City Vehicle Impound Lot",
         Type = { "car", "bike", "bicycle" },
+        NotifyOnZoneInteraction = nil, -- Can override Config.NotifyOnZoneInteraction for this specific impound
         Blip = {
             Active = true,
             Type = 357,
