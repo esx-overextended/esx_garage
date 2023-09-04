@@ -231,7 +231,7 @@ end
 
 function RefreshBlips()
     for garageKey, garageData in pairs(Config.Garages) do
-        if DoesPlayerHaveAccessToGroup(garageData.Groups) then
+        if ESX.CanInteractWithGroup(garageData.Groups) then
             if not garageZones[garageKey].blip then
                 garageZones[garageKey].blip = createBlip(garageZones[garageKey].polyZone)
             end

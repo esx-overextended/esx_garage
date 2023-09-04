@@ -127,8 +127,7 @@ RegisterServerEvent("esx_garage:removeVehicleFromImpound", function(data)
     local vehicleData = MySQL.single.await(query, { data.vehicleId })
 
     if not vehicleData or (vehicleData.owner ~= xPlayer.getIdentifier() and not DoesPlayerHaveAccessToGroup(xPlayer, vehicleData.job)) or (vehicleData.release_fee and xPlayer.getAccount(data.account)?.money < vehicleData.release_fee) then
-        return
-            CheatDetected(xPlayer.source)
+        return CheatDetected(xPlayer.source)
     end
 
     xPlayer.removeAccountMoney(data.account, vehicleData.release_fee or Config.ImpoundPrice, ("Transferring of %s vehicle (%s) to %s"):format(data.vehicleName, vehicleData.plate, Config.Garages[data.garage]?.Label))

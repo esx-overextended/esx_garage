@@ -139,13 +139,6 @@ end
 function DoesPlayerHaveAccessToGroup(xPlayer, groupsToCheck)
     if not groupsToCheck or groupsToCheck == "" then return true end
 
-    local groupsToCheckType = type(groupsToCheck)
-
-    if groupsToCheckType == "string" then
-        groupsToCheck = { groupsToCheck }
-        groupsToCheckType = "table"
-    end
-
     local xPlayerType = type(xPlayer)
 
     if xPlayerType == "number" then
@@ -155,38 +148,14 @@ function DoesPlayerHaveAccessToGroup(xPlayer, groupsToCheck)
 
     if xPlayerType ~= "table" then return false end
 
-    xPlayer.job = xPlayer.getJob()
-    local playerGroups = xPlayer.getGroups()
-    local playerJobName = xPlayer.job.name
-    local playerJobDuty = xPlayer.job.duty
-    local playerJobGrade = xPlayer.job.grade
-
-    if groupsToCheckType == "table" then
-        if table.type(groupsToCheck) == "array" then
-            for i = 1, #groupsToCheck do
-                local groupName = groupsToCheck[i]
-
-                if groupName == playerJobName and playerJobDuty then return true end
-
-                if playerGroups[groupName] and not ESX.GetJob(groupName) --[[making sure the group is not a job]] then return true end
-            end
-        else
-            for groupName, garageGroupGrade in pairs(groupsToCheck) do
-                if groupName == playerJobName and garageGroupGrade == playerJobGrade and playerJobDuty then return true end
-
-                if playerGroups[groupName] == garageGroupGrade and not ESX.GetJob(groupName) --[[making sure the group is not a job]] then return true end
-            end
-        end
-    end
-
-    return false
+    return xPlayer.canInteractWithGroup and xPlayer.canInteractWithGroup(groupsToCheck)
 end
 
----@param xPlayer table | number
+---@param xPlayer table
 ---@param garageKey string
 ---@return boolean
 function IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey)
-    return DoesPlayerHaveAccessToGroup(xPlayer, Config.Garages[garageKey]?.Groups)
+    return DoesPlayerHaveAccessToGroup(xPlayer, groupsToCheck)
 end
 
 ---@param coords vector3 | vector4 | table

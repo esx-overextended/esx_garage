@@ -138,11 +138,11 @@ AddEventHandler("esx_garage:openImpoundConfirmation", function(data)
                 lib.hideContext()
 
                 local inputDialogOptions = {
-                    { label = "Spawn vehicle & don't transfer it...", value = nil}
+                    { label = "Spawn vehicle & don't transfer it...", value = nil }
                 }
 
                 for garageKey, garageData in pairs(Config.Garages) do
-                    if DoesPlayerHaveAccessToGroup(garageData.Groups) then
+                    if ESX.CanInteractWithGroup(garageData.Groups) then
                         inputDialogOptions[#inputDialogOptions + 1] = { label = garageData.Label, value = garageKey }
                     end
                 end
@@ -164,7 +164,10 @@ AddEventHandler("esx_garage:openImpoundConfirmation", function(data)
                         end
                     end
 
-                    if not data.spawnIndex then ESX.ShowNotification("None of the spawn points are clear at the moment!") return lib.showContext("esx_garage:impoundConfirmation") end
+                    if not data.spawnIndex then
+                        ESX.ShowNotification("None of the spawn points are clear at the moment!")
+                        return lib.showContext("esx_garage:impoundConfirmation")
+                    end
                 end
 
                 TriggerServerEvent("esx_garage:removeVehicleFromImpound", data)
