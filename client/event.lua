@@ -142,7 +142,7 @@ AddEventHandler("esx_garage:openImpoundConfirmation", function(data)
                 }
 
                 for garageKey, garageData in pairs(Config.Garages) do
-                    if ESX.CanInteractWithGroup(garageData.Groups) then
+                    if IsPlayerAuthorizedToAccessGarage(garageKey) then
                         inputDialogOptions[#inputDialogOptions + 1] = { label = garageData.Label, value = garageKey }
                     end
                 end

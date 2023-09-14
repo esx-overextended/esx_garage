@@ -230,8 +230,8 @@ function IsPlayerInImpoundZone(impoundKey)
 end
 
 function RefreshBlips()
-    for garageKey, garageData in pairs(Config.Garages) do
-        if ESX.CanInteractWithGroup(garageData.Groups) then
+    for garageKey in pairs(Config.Garages) do
+        if IsPlayerAuthorizedToAccessGarage(garageKey) then
             if not garageZones[garageKey].blip then
                 garageZones[garageKey].blip = createBlip(garageZones[garageKey].polyZone)
             end
