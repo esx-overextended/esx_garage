@@ -155,6 +155,8 @@ end
 ---@param garageKey string
 ---@return boolean
 function IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey)
+    local groupsToCheck = Config.Garages[garageKey]?.Groups
+
     return DoesPlayerHaveAccessToGroup(xPlayer, groupsToCheck)
 end
 
