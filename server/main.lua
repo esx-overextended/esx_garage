@@ -270,3 +270,36 @@ function ImpoundVehicle(data)
 end
 
 exports("ImpoundVehicle", ImpoundVehicle)
+
+
+lib.addCommand('groupVehicle', {help = "Admin's way of setting a vehicle to a group/job", params = {
+    {
+        name = 'group',
+        type = 'string',
+        help = "What group to give the car to"
+    },
+    {
+        name = 'grade',
+        type = "number",
+        help = "What grade is the car avainable to"
+    },
+    {
+        name = "car",
+        type = "string",
+        help = "Car's name if not in a car",
+        optional = true
+    }
+}, restricted = 'group.admin'}, function(source, args)
+    local vehicle = GetVehiclePedIsIn(GetPlayerPed(source), false)
+    if vehicle ~= 0 then
+        local xVehicle = ESX.GetVehicle(vehicle)
+        xVehicle.setGroup(args.group)
+        xVehicle.setMetadata("groupGrade", args.grade)
+    else
+        local coords = ESX.GetPlayerFromId(source).getCoords()
+        ESX.CreateVehicle({
+            model = args.car,
+            group = args.group,
+        }, coords, coords.heading).setMetadata("groupGrade", args.grade)
+    end
+end)
