@@ -281,7 +281,9 @@ ESX.RegisterCommand("assignvehicle", "admin", function(xPlayer, args, showError)
         if not xVehicle or xVehicle?.group --[[to make sure not to override the current vehicle's group]] then
             return xPlayer.showNotification("This vehicle cannot be assigned to the specified group/job. Get out of it and spawn a new vehicle!", "error")
         end
-
+        if xVehicle.owner then
+            xVehicle.setOwner(nil)
+        end
         xVehicle.setGroup(args.group)
     else
         local coords = xPlayer.getCoords()
