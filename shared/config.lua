@@ -1,6 +1,6 @@
 Config = {}
 
-Config.Debug = false
+Config.Debug = true
 
 Config.DefaultPed = `s_m_y_airworker`
 
@@ -126,6 +126,46 @@ Config.Garages = {
             vector4(240.301, -741.432, 34.201, 158.749),
             vector4(237.188, -740.213, 34.189, 160.723),
             vector4(233.842, -739.235, 34.163, 161.358)
+        }
+    },
+    ["paleto"] = {
+        Label = "Paleto Bay Garage",
+        Type = { "car", "bike", "bicycle" },
+        RadialMenu = nil,              -- Can override Config.RadialMenu for this specific garage
+        NotifyOnZoneInteraction = nil, -- Can override Config.NotifyOnZoneInteraction for this specific garage
+        Blip = {
+            Active = true,
+            Coords = nil, -- Can set specific coords for blip, otherwise the center of the polyzone points will be picked
+            Type = 357,
+            Size = 0.8,
+            Color = 2
+        },
+        Peds = {
+            { Model = nil, Coords = vector4(-197.432, 6204.079, 30.470, 45.354) },
+            { Model = nil, Coords = vector4(-242.861, 6188.043, 30.487, 325.984) }
+        },
+        Thickness = 6,
+        Points = {
+            vector3(-178.9, 6221.7, 31.0),
+            vector3(-196.1, 6238.7, 31.0),
+            vector3(-234.5, 6200.3, 31.0),
+            vector3(-251.8, 6217.4, 31.0),
+            vector3(-262.7, 6207.1, 31.0),
+            vector3(-228.6, 6172.1, 31.0),
+        },
+        Spawns = {
+            -- Row 1
+            vector4(-198.514, 6229.740, 31.082, 226.770),
+            vector4(-200.901, 6227.182, 31.082, 226.770),
+            vector4(-203.261, 6224.848, 31.065, 226.771),
+            vector4(-205.687, 6222.566, 31.065, 226.771),
+            vector4(-208.061, 6220.061, 31.065, 226.771),
+            -- Row 2
+            vector4(-238.378, 6196.707, 31.065, 133.228),
+            vector4(-240.738, 6199.081, 31.065, 133.228),
+            vector4(-243.151, 6201.560, 31.065, 133.228),
+            vector4(-245.393, 6203.947, 31.065, 133.228),
+            vector4(-247.832, 6206.307, 31.065, 133.228)
         }
     },
     ["mrpd_car"] = {
