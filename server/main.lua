@@ -272,8 +272,8 @@ end
 exports("ImpoundVehicle", ImpoundVehicle)
 
 -- This will be modified or even moved to another resource for a more complex functionality in future
-ESX.RegisterCommand("assignvehicle", "admin", function(xPlayer, args, showError)
-    local vehicleEntity = GetVehiclePedIsIn(GetPlayerPed(source), false)
+ESX.RegisterCommand("assignvehicle", "admin", function(xPlayer, args, _)
+    local vehicleEntity = GetVehiclePedIsIn(GetPlayerPed(xPlayer.source), false)
 
     if vehicleEntity ~= 0 then
         local xVehicle = ESX.GetVehicle(vehicleEntity)
@@ -287,9 +287,11 @@ ESX.RegisterCommand("assignvehicle", "admin", function(xPlayer, args, showError)
         local coords = xPlayer.getCoords()
 
         if not ESX.CreateVehicle({
-            model = args.vehicle,
-            group = args.group,
-        }, coords, coords.heading) then return xPlayer.showNotification("The specified vehicle could not be generated!", "error") end
+                model = args.vehicle,
+                group = args.group,
+            }, coords, coords.heading) then
+            return xPlayer.showNotification("The specified vehicle could not be generated!", "error")
+        end
     end
 
     xPlayer.showNotification("The vehicle is successfully assigned to the specified group!", "success")
@@ -297,7 +299,7 @@ end, false, {
     help = "Admins way of assigning a vehicle to a group/job",
     validate = false,
     arguments = {
-        { name = "group",      help = "name of the group/job that the vehicle should be assigned to",                   type = "string" },
-        { name = "vehicle",    help = "vehicle name/model to assign (only if you are not already inside a vehicle)",    type = "string" }
+        { name = "group",   help = "name of the group/job that the vehicle should be assigned to",                type = "string" },
+        { name = "vehicle", help = "vehicle name/model to assign (only if you are not already inside a vehicle)", type = "string" }
     }
 })
