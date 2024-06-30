@@ -5,7 +5,7 @@ local function createBlip(data)
 
     if not zoneData or not zoneData.Blip or not zoneData.Blip.Active then return end
 
-    local blipCoords = zoneData.Coords or data.coords -- getting the blip coords from polyzone's centroid if not specifically indicated...
+    local blipCoords = zoneData.Blip.Coords or data.coords -- getting the blip coords from polyzone's centroid if not specifically indicated...
     local blipName = ("%s_%s"):format(data.garageKey and "garage" or data.impoundKey and "impound", data.garageKey or data.impoundKey)
     local blip = AddBlipForCoord(blipCoords.x, blipCoords.y, blipCoords.z)
 
