@@ -151,7 +151,7 @@ Config.Garages = {
             vector3(-234.5, 6200.3, 31.0),
             vector3(-251.8, 6217.4, 31.0),
             vector3(-262.7, 6207.1, 31.0),
-            vector3(-228.6, 6172.1, 31.0),
+            vector3(-228.6, 6172.1, 31.0)
         },
         Spawns = {
             -- Row 1
@@ -166,6 +166,44 @@ Config.Garages = {
             vector4(-243.151, 6201.560, 31.065, 133.228),
             vector4(-245.393, 6203.947, 31.065, 133.228),
             vector4(-247.832, 6206.307, 31.065, 133.228)
+        }
+    },
+    ["pegasus_hangar"] = {
+        Label = "Pegasus Hangar",
+        Type = { "heli" },
+        RadialMenu = nil,              -- Can override Config.RadialMenu for this specific garage
+        NotifyOnZoneInteraction = nil, -- Can override Config.NotifyOnZoneInteraction for this specific garage
+        Blip = {
+            Active = true,
+            Coords = nil, -- Can set specific coords for blip, otherwise the center of the polyzone points will be picked
+            Type = 360,
+            Size = 1.0,
+            Color = 2
+        },
+        Peds = {
+            { Model = `S_M_Y_DWService_01`, Coords = vector4(-708.0660, -1417.9265, 4.0005, 178.3207) },
+            { Model = `S_M_Y_DWService_01`, Coords = vector4(-767.1332, -1472.6134, 4.0005, 295.4921) },
+        },
+        Thickness = 9,
+        Points = {
+            vector3(-718.6, -1374.3, 5.0),
+            vector3(-793.0, -1463.0, 5.0),
+            vector3(-787.0, -1479.6, 5.0),
+            vector3(-767.2, -1472.6, 5.0),
+            vector3(-753.9, -1512.5, 5.0),
+            vector3(-727.0, -1501.1, 5.0),
+            vector3(-721.1, -1493.7, 5.0),
+            vector3(-709.4, -1489.3, 4.0),
+            vector3(-679.7, -1453.0, 5.0),
+            vector3(-676.8, -1392.6, 5.0),
+            vector3(-682.8, -1387.2, 5.0),
+            vector3(-699.6, -1407.1, 5.0),
+            vector3(-712.7, -1396.1, 5.0),
+            vector3(-704.2, -1386.3, 5.0)
+        },
+        Spawns = {
+            vector4(-726.192, -1445.775, 4.881, 138.867),
+            vector4(-746.592, -1469.947, 4.879, 141.685)
         }
     },
     ["mrpd_car"] = {
