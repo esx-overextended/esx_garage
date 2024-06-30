@@ -104,6 +104,8 @@ RegisterServerEvent("esx_garage:storeOwnedVehicle", function(data)
 
     if not IsCoordsInGarageZone(xVehicle.getCoords(true), data.garageKey) or not IsPlayerAuthorizedToAccessGarage(xPlayer, data.garageKey) or GetEntityModel(entity) ~= data.properties?.model then return CheatDetected(xPlayer.source) end
 
+    ESX.OneSync.MakeVehicleEmptyOfPassengers(entity)
+
     xVehicle.setStored(true, true)
 
     MySQL.update.await("UPDATE `owned_vehicles` SET `vehicle` = ?, `garage` = ? WHERE `id` = ?", { json.encode(data.properties), data.garageKey, xVehicle.id })
