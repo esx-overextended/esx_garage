@@ -170,7 +170,7 @@ Config.Garages = {
     },
     ["vespucci_helipad"] = {
         Label = "Vespucci Helipad",
-        Type = { "heli" },
+        Type = { "helicopter" },
         RadialMenu = nil,              -- Can override Config.RadialMenu for this specific garage
         NotifyOnZoneInteraction = nil, -- Can override Config.NotifyOnZoneInteraction for this specific garage
         Blip = {
@@ -295,7 +295,7 @@ Config.Garages = {
     },
     ["mrpd_helipad"] = {
         Label = "MRPD Helipad",
-        Type = { "heli" },
+        Type = { "helicopter" },
         RadialMenu = nil,              -- Can override Config.RadialMenu for this specific garage
         NotifyOnZoneInteraction = nil, -- Can override Config.NotifyOnZoneInteraction for this specific garage
         Groups = { "police" },
