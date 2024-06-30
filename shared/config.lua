@@ -182,7 +182,7 @@ Config.Garages = {
         },
         Peds = {
             { Model = `S_M_Y_DWService_01`, Coords = vector4(-708.0660, -1417.9265, 4.0005, 178.3207) },
-            { Model = `S_M_Y_DWService_01`, Coords = vector4(-767.1332, -1472.6134, 4.0005, 295.4921) },
+            { Model = `S_M_Y_DWService_01`, Coords = vector4(-767.1332, -1472.6134, 4.0005, 295.4921) }
         },
         Thickness = 9,
         Points = {
@@ -220,14 +220,14 @@ Config.Garages = {
         },
         Peds = {
             { Model = `MP_M_BoatStaff_01`, Coords = vector4(-865.9993, -1323.8779, 0.6052, 265.6554) },
-            { Model = `MP_M_BoatStaff_01`, Coords = vector4(-850.1005, -1367.4650, 0.6052, 262.3894) },
+            { Model = `MP_M_BoatStaff_01`, Coords = vector4(-850.1005, -1367.4650, 0.6052, 262.3894) }
         },
         Thickness = 12,
         Points = {
             vector3(-848.2105, -1316.6923, -0.45),
             vector3(-866.7454, -1323.7090, -0.45),
             vector3(-833.3112, -1414.9728, -0.45),
-            vector3(-815.1022, -1407.6499, -0.45),
+            vector3(-815.1022, -1407.6499, -0.45)
         },
         Spawns = {
             vector4(-857.9662, -1328.1476, 0.0902, 111.3365),
@@ -239,7 +239,7 @@ Config.Garages = {
             vector4(-839.0490, -1380.2212, 0.0738, 109.2635),
             vector4(-835.8716, -1388.9010, 0.0991, 109.2960),
             vector4(-832.9903, -1397.1456, 0.0736, 109.2577),
-            vector4(-829.8182, -1405.9231, 0.1022, 109.8358),
+            vector4(-829.8182, -1405.9231, 0.1022, 109.8358)
         }
     },
     ["mrpd_car"] = {
@@ -282,7 +282,7 @@ Config.Garages = {
             vector3(488.454, -1017.525, 28.2),
             vector3(488.173, -1025.240, 28.2),
             vector3(467.408, -1027.735, 28.2),
-            vector3(467.329, -1026.067, 28.2),
+            vector3(467.329, -1026.067, 28.2)
         },
         Spawns = {
             vector4(427.378, -1027.928, 28.577, 5.853),
@@ -290,7 +290,45 @@ Config.Garages = {
             vector4(434.924, -1026.973, 28.442, 4.693),
             vector4(438.628, -1026.483, 28.372, 5.391),
             vector4(442.508, -1025.965, 28.297, 5.215),
-            vector4(446.111, -1025.423, 28.225, 6.965),
+            vector4(446.111, -1025.423, 28.225, 6.965)
+        }
+    },
+    ["mrpd_helipad"] = {
+        Label = "MRPD Helipad",
+        Type = { "heli" },
+        RadialMenu = nil,              -- Can override Config.RadialMenu for this specific garage
+        NotifyOnZoneInteraction = nil, -- Can override Config.NotifyOnZoneInteraction for this specific garage
+        Groups = { "police" },
+        Blip = {
+            Active = true,
+            Coords = vector3(463.8142, -982.5399, 42.6920), -- Can set specific coords for blip, otherwise the center of the polyzone points will be picked
+            Type = 360,
+            Size = 0.9,
+            Color = 38
+        },
+        Peds = {
+            { Model = `S_M_Y_Cop_01`, Coords = vector4(463.8142, -982.5399, 42.6920, 83.8385) }
+        },
+        Thickness = 6.5,
+        Points = {
+            vector3(489.4642, -974.6413, 44.0),
+            vector3(489.3083, -1017.1627, 44.0),
+            vector3(471.6634, -1017.1523, 44.0),
+            vector3(471.5256, -1011.3868, 44.0),
+            vector3(467.1771, -1011.5205, 44.0),
+            vector3(467.0119, -1022.0325, 44.0),
+            vector3(458.6456, -1021.9036, 44.0),
+            vector3(458.6318, -1001.8510, 44.0),
+            vector3(424.9789, -1001.5118, 44.0),
+            vector3(425.1103, -988.4324, 44.0),
+            vector3(429.8549, -988.3430, 44.0),
+            vector3(430.0430, -970.8538, 44.0),
+            vector3(472.5120, -970.9305, 44.0),
+            vector3(472.7439, -974.6896, 44.0)
+        },
+        Spawns = {
+            vector4(448.3339, -981.2444, 43.5695, 90.6704),
+            vector4(482.6226, -982.2857, 40.8889, 271.1061)
         }
     },
 }
@@ -307,7 +345,7 @@ Config.Impounds = {
             Color = 1
         },
         Peds = {
-            { Model = nil, Coords = vector4(409.022, -1622.879, 28.291, 232.386) },
+            { Model = nil, Coords = vector4(409.022, -1622.879, 28.291, 232.386) }
         },
         Thickness = 4,
         Points = {
@@ -317,7 +355,7 @@ Config.Impounds = {
             vector3(423.439, -1645.282, 30.0),
             vector3(424.056, -1640.452, 30.0),
             vector3(423.943, -1632.924, 30.0),
-            vector3(423.212, -1628.171, 30.0),
+            vector3(423.212, -1628.171, 30.0)
         },
         Spawns = {
             vector4(417.190, -1627.592, 28.879, 141.321),
@@ -332,7 +370,7 @@ Config.Impounds = {
             vector4(403.247, -1650.694, 28.881, 319.616),
             vector4(400.883, -1648.632, 28.880, 319.01),
             vector4(398.481, -1646.473, 28.879, 318.613),
-            vector4(396.039, -1644.567, 28.879, 319.265),
+            vector4(396.039, -1644.567, 28.879, 319.265)
         }
     },
 }
