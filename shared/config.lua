@@ -373,6 +373,33 @@ Config.Impounds = {
             vector4(396.039, -1644.567, 28.879, 319.265)
         }
     },
+    ["helicopter_impound"] = {
+        Label = "City Helicopter Impound Pad",
+        Type = { "helicopter" },
+        NotifyOnZoneInteraction = nil, -- Can override Config.NotifyOnZoneInteraction for this specific impound
+        Blip = {
+            Active = true,
+            Type = 360,
+            Size = 0.8,
+            Color = 1
+        },
+        Peds = {
+            { Model = `S_M_Y_DWService_01`, Coords = vector4(-1242.6700, -3394.0515, 12.9402, 56.0035) },
+            { Model = `S_M_Y_DWService_01`, Coords = vector4(-1284.3209, -3350.2292, 12.9402, 239.9313) }
+        },
+        Thickness = 18,
+        Points = {
+            vector3(-1228.0842, -3381.7322, 20.0),
+            vector3(-1266.7365, -3431.1379, 20.0),
+            vector3(-1324.2660, -3397.9502, 20.0),
+            vector3(-1293.2272, -3344.1694, 20.0),
+        },
+        Spawns = {
+            vector4(-1251.3347, -3382.9189, 13.8260, 331.0130),
+            vector4(-1267.5283, -3374.0774, 13.8264, 330.6362),
+            vector4(-1283.2660, -3364.7366, 13.8252, 328.1250),
+        }
+    },
     ["watercraft_impound"] = {
         Label = "City Watercraft Impound Dock",
         Type = { "boat" },
