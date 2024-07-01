@@ -373,4 +373,30 @@ Config.Impounds = {
             vector4(396.039, -1644.567, 28.879, 319.265)
         }
     },
+    ["watercraft_impound"] = {
+        Label = "City Watercraft Impound Dock",
+        Type = { "boat" },
+        NotifyOnZoneInteraction = nil, -- Can override Config.NotifyOnZoneInteraction for this specific impound
+        Blip = {
+            Active = true,
+            Type = 356,
+            Size = 0.8,
+            Color = 1
+        },
+        Peds = {
+            { Model = nil, Coords = vector4(24.8026, -2808.7136, 4.7015, 9.3093) }
+        },
+        Thickness = 10,
+        Points = {
+            vector3(25.2260, -2760.0549, 2.0),
+            vector3(10.0488, -2760.1599, 2.0),
+            vector3(8.7836, -2810.0793, 2.0),
+            vector3(25.0153, -2808.7319, 2.0)
+        },
+        Spawns = {
+            vector4(23.0546, -2817.4324, 0.0245, 176.9383),
+            vector4(28.1134, -2808.2424, 0.1820, 182.9800),
+            vector4(7.5267, -2796.7776, 0.6317, 181.8649)
+        }
+    }
 }
