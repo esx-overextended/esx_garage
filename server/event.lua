@@ -91,7 +91,7 @@ RegisterServerEvent("esx_garage:storeOwnedVehicle", function(data)
 
     local modelData = ESX.GetVehicleData(xVehicle.model)
 
-    if not DoesGarageAcceptType(data.garageKey, modelData?.type) then
+    if not DoesZoneAcceptVehicleType("garage", data.garageKey, modelData?.type) then
         return xPlayer.showNotification("You cannot store this type of vehicle here in this garage!", "error")
     end
 
@@ -113,12 +113,10 @@ RegisterServerEvent("esx_garage:removeVehicleFromImpound", function(data)
 
     if not IsPlayerInImpoundZone(xPlayer.source, data.impoundKey) then return CheatDetected(xPlayer.source) end
 
-    local _type = type(Config.Impounds[data.impoundKey].Type)
-    local currentImpoundTypes = _type == "string" and { Config.Impounds[data.impoundKey]?.Type } or _type == "table" and Config.Impounds[data.impoundKey]?.Type or {} --[[@as table]]
     local query = string.format([[SELECT ov.`owner`, ov.`plate`, ov.`job`, iv.`release_fee`
     FROM `owned_vehicles` AS `ov`
     LEFT JOIN `impounded_vehicles` AS `iv` ON ov.`id` = iv.`id`
-    WHERE ov.`id` = ? AND ov.`type` IN (%s) AND (ov.`stored` = 0 or ov.`stored` IS NULL) AND (iv.`release_date` IS NULL OR NOW() >= iv.`release_date`)]], ("'%s'"):format(table.concat(currentImpoundTypes, "', '")))
+    WHERE ov.`id` = ? AND (ov.`stored` = 0 or ov.`stored` IS NULL) AND (iv.`release_date` IS NULL OR NOW() >= iv.`release_date`)]])
     local vehicleData = MySQL.single.await(query, { data.vehicleId })
 
     if not vehicleData or (vehicleData.owner ~= xPlayer.getIdentifier() and not DoesPlayerHaveAccessToGroup(xPlayer, vehicleData.job)) or (vehicleData.release_fee and xPlayer.getAccount(data.account)?.money < vehicleData.release_fee) then

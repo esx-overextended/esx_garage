@@ -46,25 +46,32 @@ MySQL.ready(function()
     end
 end)
 
----@param garageKey string
+---@param zoneType string
+---@param zoneKey string
 ---@param vehicleType string
 ---@return boolean
-function DoesGarageAcceptType(garageKey, vehicleType)
-    local garageData = Config.Garages[garageKey]
+function DoesZoneAcceptVehicleType(zoneType, zoneKey, vehicleType)
+    local zoneData
 
-    if not garageData or type(vehicleType) ~= "string" then return false end
+    if zoneType == "garage" then
+        zoneData = Config.Garages[zoneKey]
+    elseif zoneType == "impound" then
+        zoneData = Config.Impounds[zoneKey]
+    end
 
-    local garageType = garageData.Type
+    if not zoneData or type(vehicleType) ~= "string" then return false end
 
-    if not garageType then return true end -- means this garage does not have a specific type, therefore all types are accepted
+    local zoneAcceptedType = zoneData.Type
 
-    local _type = type(garageType)
+    if not zoneAcceptedType then return true end -- means this zone does not have a specific type, therefore all vehicles type are accepted
 
-    if _type == "string" and garageType == vehicleType then
+    local _type = type(zoneAcceptedType)
+
+    if _type == "string" and zoneAcceptedType == vehicleType then
         return true
-    elseif _type == "table" and table.type(garageType) == "array" then
-        for i = 1, #garageType do
-            if garageType[i] == vehicleType then
+    elseif _type == "table" and table.type(zoneAcceptedType) == "array" then
+        for i = 1, #zoneAcceptedType do
+            if zoneAcceptedType[i] == vehicleType then
                 return true
             end
         end
@@ -100,7 +107,7 @@ function GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
 
             local modelData = ESX.GetVehicleData(dbResult.model)
 
-            if not DoesGarageAcceptType(garageKey, modelData?.type) then
+            if not DoesZoneAcceptVehicleType("garage", garageKey, modelData?.type) then
                 goto skipLoop
             end
 
