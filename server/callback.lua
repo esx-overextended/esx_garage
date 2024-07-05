@@ -5,12 +5,10 @@ lib.callback.register("esx_garage:getOwnedVehicles", function(source, garageKey)
 
     if not IsPlayerInGarageZone(xPlayer.source, garageKey) or not IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey) then return CheatDetected(xPlayer.source) end
 
-    local _type = type(Config.Garages[garageKey].Type)
-    local currentGarageTypes = _type == "string" and { Config.Garages[garageKey].Type } or _type == "table" and Config.Garages[garageKey].Type or {} --[[@as table]]
     local query = string.format([[SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage`, iv.`impounded_at`
     FROM `owned_vehicles` AS ov
     LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id`
-    WHERE ov.`owner` = ? AND ov.`type` IN (%s) AND ov.`job` IS NULL]], ("'%s'"):format(table.concat(currentGarageTypes, "', '")))
+    WHERE ov.`owner` = ? AND ov.`job` IS NULL]])
     local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier() })
 
     return GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
@@ -42,13 +40,10 @@ lib.callback.register("esx_garage:getSocietyVehicles", function(source, garageKe
 
     if not next(currentGarageGroups) then return print(("[^1ERROR^7] Mulfunctioned data for garage (^5%s^7) as per Player (^5%s^7) request. Expected groups but received nothing!"):format(garageKey, xPlayer.source)) end
 
-    _type = type(Config.Garages[garageKey].Type)
-    local currentGarageTypes = _type == "string" and { Config.Garages[garageKey].Type } or _type == "table" and Config.Garages[garageKey].Type or {} --[[@as table]]
-
     local query = string.format([[SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage`, iv.`impounded_at`
     FROM `owned_vehicles` AS ov
     LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id`
-    WHERE (ov.`owner` = ? OR ov.`owner` = '' OR ov.`owner` IS NULL) AND ov.`type` IN (%s) AND ov.`job` IN (%s)]], ("'%s'"):format(table.concat(currentGarageTypes, "', '")), ("'%s'"):format(table.concat(currentGarageGroups, "', '")))
+    WHERE (ov.`owner` = ? OR ov.`owner` = '' OR ov.`owner` IS NULL) AND ov.`job` IN (%s)]], ("'%s'"):format(table.concat(currentGarageGroups, "', '")))
     local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier() })
 
     return GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)

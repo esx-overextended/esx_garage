@@ -41,7 +41,8 @@ RegisterServerEvent("esx_garage:takeOutOwnedVehicle", function(data)
 
     if not xVehicle then return end
 
-    xPlayer.showNotification("Vehicle spawned!", "success")
+    local modelData = ESX.GetVehicleData(xVehicle.model)
+    xPlayer.showNotification(("Spawned %s!"):format(("%s %s"):format(modelData.make, modelData.name)), "success")
 
     vehicleData.vehicle = vehicleData.vehicle and json.decode(vehicleData.vehicle)
 
@@ -88,18 +89,10 @@ RegisterServerEvent("esx_garage:storeOwnedVehicle", function(data)
         if not canStoreVehicleHere then return xPlayer.showNotification("You cannot store this vehicle here in this garage!", "error") end
     end
 
-    if currentGarage.Type then
-        local canStoreVehicleHere = false
-        local currentVehicleType = GetBackwardCompatibleVehicleType(ESX.GetVehicleData(xVehicle.model)?.type)
+    local modelData = ESX.GetVehicleData(xVehicle.model)
 
-        for i = 1, #currentGarage.Type do
-            if currentVehicleType == currentGarage.Type[i] then
-                canStoreVehicleHere = true
-                break
-            end
-        end
-
-        if not canStoreVehicleHere then return xPlayer.showNotification("You cannot store this type of vehicle here in this garage!", "error") end
+    if not DoesGarageAcceptType(data.garageKey, modelData?.type) then
+        return xPlayer.showNotification("You cannot store this type of vehicle here in this garage!", "error")
     end
 
     if not IsCoordsInGarageZone(xVehicle.getCoords(true), data.garageKey) or not IsPlayerAuthorizedToAccessGarage(xPlayer, data.garageKey) or GetEntityModel(entity) ~= data.properties?.model then return CheatDetected(xPlayer.source) end
@@ -110,7 +103,7 @@ RegisterServerEvent("esx_garage:storeOwnedVehicle", function(data)
 
     MySQL.update.await("UPDATE `owned_vehicles` SET `vehicle` = ?, `garage` = ? WHERE `id` = ?", { json.encode(data.properties), data.garageKey, xVehicle.id })
 
-    xPlayer.showNotification("Vehicle stored!", "success")
+    xPlayer.showNotification(("Stored %s!"):format(("%s %s"):format(modelData.make, modelData.name)), "success")
 end)
 
 RegisterServerEvent("esx_garage:removeVehicleFromImpound", function(data)

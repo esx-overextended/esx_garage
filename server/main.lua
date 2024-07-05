@@ -46,6 +46,33 @@ MySQL.ready(function()
     end
 end)
 
+---@param garageKey string
+---@param vehicleType string
+---@return boolean
+function DoesGarageAcceptType(garageKey, vehicleType)
+    local garageData = Config.Garages[garageKey]
+
+    if not garageData or type(vehicleType) ~= "string" then return false end
+
+    local garageType = garageData.Type
+
+    if not garageType then return true end -- means this garage does not have a specific type, therefore all types are accepted
+
+    local _type = type(garageType)
+
+    if _type == "string" and garageType == vehicleType then
+        return true
+    elseif _type == "table" and table.type(garageType) == "array" then
+        for i = 1, #garageType do
+            if garageType[i] == vehicleType then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
 ---@param dbResults table
 ---@param garageKey string
 ---@return table, table
@@ -57,7 +84,7 @@ function GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
             local dbResult = dbResults[i]
             dbResult.vehicle = json.decode(dbResult.vehicle)
 
-            if not dbResult.model and dbResult.vehicle?.model then -- probably just migrated from esx-legacy therefore dbResult.model is empty...
+            if (not dbResult.model or dbResult.model == "") and dbResult.vehicle?.model then -- probably just migrated from esx-legacy therefore dbResult.model is empty...
                 for vModel, vData in pairs(ESX.GetVehicleData()) do
                     if vData.hash == dbResult.vehicle.model then
                         dbResult.model = vModel
@@ -66,8 +93,14 @@ function GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
                 end
             end
 
-            if not dbResult.model then
-                print(("[^3WARNING^7] Vehicle hash (^1%s^7) for ID (^5%s^7) is invalid \nEnsure vehicle exists in ^2'@es_extended/files/vehicles.json'^7"):format(dbResult.vehicle?.model, dbResult.id))
+            if (not dbResult.model or dbResult.model == "") then
+                ESX.Trace(("Vehicle hash (^1%s^7) for Vehicle ID (^5%s^7) from database is invalid \nEnsure vehicle exists in ^2'@es_extended/files/vehicles.json'^7"):format(dbResult.vehicle?.model, dbResult.id), "warning", true)
+                goto skipLoop
+            end
+
+            local modelData = ESX.GetVehicleData(dbResult.model)
+
+            if not DoesGarageAcceptType(garageKey, modelData?.type) then
                 goto skipLoop
             end
 
@@ -80,9 +113,7 @@ function GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
                 garage = dbResult.garage
             }
 
-            local modelData = ESX.GetVehicleData(dbResult.model)
             local vehicleName = ("%s %s"):format(modelData.make, modelData.name)
-
             local contextDescription = ("Plate: %s"):format(dbResult.plate)
             local contextMetadata = {
                 { label = "Status", value = vehicles[count].stored and ("Stored in %s"):format(dbResult.garage == garageKey and "Here" or Config.Garages[dbResult.garage]?.Label) or "Out" }
@@ -223,21 +254,6 @@ function GetIconForVehicleModel(vehicleModel, modelType)
     end
 
     return "fa-solid fa-car" -- default icon
-end
-
----Gets a vehicle type based on esx-legacy (used in DB column to keep backward-compatibility)
----@param vehicleType string
----@return string
-function GetBackwardCompatibleVehicleType(vehicleType)
-    if vehicleType == "automobile" then
-        return "car"
-    elseif vehicleType == "quadbike" then
-        return "bike"
-    elseif vehicleType == "heli" then
-        return "helicopter"
-    end
-
-    return vehicleType
 end
 
 ---@class CImpoundData
