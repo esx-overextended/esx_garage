@@ -113,10 +113,11 @@ RegisterServerEvent("esx_garage:removeVehicleFromImpound", function(data)
 
     if not IsPlayerInImpoundZone(xPlayer.source, data.impoundKey) then return CheatDetected(xPlayer.source) end
 
-    local query = string.format([[SELECT ov.`owner`, ov.`plate`, ov.`job`, iv.`release_fee`
+    local query = [[
+    SELECT ov.`owner`, ov.`plate`, ov.`job`, iv.`release_fee`
     FROM `owned_vehicles` AS `ov`
     LEFT JOIN `impounded_vehicles` AS `iv` ON ov.`id` = iv.`id`
-    WHERE ov.`id` = ? AND (ov.`stored` = 0 or ov.`stored` IS NULL) AND (iv.`release_date` IS NULL OR NOW() >= iv.`release_date`)]])
+    WHERE ov.`id` = ? AND (ov.`stored` = 0 or ov.`stored` IS NULL) AND (iv.`release_date` IS NULL OR NOW() >= iv.`release_date`)]]
     local vehicleData = MySQL.single.await(query, { data.vehicleId })
 
     if not vehicleData or (vehicleData.owner ~= xPlayer.getIdentifier() and not DoesPlayerHaveAccessToGroup(xPlayer, vehicleData.job)) or (vehicleData.release_fee and xPlayer.getAccount(data.account)?.money < vehicleData.release_fee) then
@@ -134,7 +135,7 @@ RegisterServerEvent("esx_garage:removeVehicleFromImpound", function(data)
         local spawnCoords = Config.Impounds[data.impoundKey].Spawns[data.spawnIndex]
 
         if spawnCoords and ESX.CreateVehicle(data.vehicleId, spawnCoords, spawnCoords?.w, true) then
-            xPlayer.showNotification("Vehicle spawned!", "success")
+            xPlayer.showNotification(("Spawned %s!"):format(data.vehicleName), "success")
         end
     else
         xPlayer.showNotification(("Vehicle %s (%s) transferred to %s!"):format(data.vehicleName, vehicleData.plate, Config.Garages[data.garage]?.Label), "success")

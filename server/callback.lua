@@ -5,10 +5,11 @@ lib.callback.register("esx_garage:getOwnedVehicles", function(source, garageKey)
 
     if not IsPlayerInGarageZone(xPlayer.source, garageKey) or not IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey) then return CheatDetected(xPlayer.source) end
 
-    local query = string.format([[SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage`, iv.`impounded_at`
+    local query = [[
+    SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage`, iv.`impounded_at`
     FROM `owned_vehicles` AS ov
     LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id`
-    WHERE ov.`owner` = ? AND ov.`job` IS NULL]])
+    WHERE ov.`owner` = ? AND ov.`job` IS NULL]]
     local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier() })
 
     return GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
@@ -70,11 +71,12 @@ lib.callback.register("esx_garage:getImpoundedVehicles", function(source, impoun
 
     if not IsPlayerInImpoundZone(xPlayer.source, impoundKey) then return CheatDetected(xPlayer.source) end
 
-    local query = string.format([[SELECT ov.`id`, ov.`plate`, ov.`job`, ov.`model`, ov.`vehicle`, iv.`impounded_at`, iv.`release_fee`, CASE WHEN NOW() >= iv.`release_date` THEN 1 ELSE 0 END AS `is_release_date_passed`,
+    local query = [[
+    SELECT ov.`id`, ov.`plate`, ov.`job`, ov.`model`, ov.`vehicle`, iv.`impounded_at`, iv.`release_fee`, CASE WHEN NOW() >= iv.`release_date` THEN 1 ELSE 0 END AS `is_release_date_passed`,
     TIMESTAMPDIFF(SECOND, NOW(), iv.`release_date`) AS `release_date_second_until`
     FROM `owned_vehicles` AS `ov`
     LEFT JOIN `impounded_vehicles` AS `iv` ON ov.`id` = iv.`id`
-    WHERE (ov.`owner` = ? or ov.`owner` IS NULL or ov.`owner` = "") AND ov.`type` IN (%s) AND (ov.`stored` = 0 or ov.`stored` IS NULL)]])
+    WHERE (ov.`owner` = ? or ov.`owner` IS NULL or ov.`owner` = "") AND (ov.`stored` = 0 or ov.`stored` IS NULL)]]
     local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier() })
 
     local vehicles, contextOptions, count = {}, {}, 0
