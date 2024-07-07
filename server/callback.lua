@@ -5,12 +5,11 @@ lib.callback.register("esx_garage:getOwnedVehicles", function(source, garageKey)
 
     if not IsPlayerInGarageZone(xPlayer.source, garageKey) or not IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey) then return CheatDetected(xPlayer.source) end
 
-    local _type = type(Config.Garages[garageKey].Type)
-    local currentGarageTypes = _type == "string" and { Config.Garages[garageKey].Type } or _type == "table" and Config.Garages[garageKey].Type or {} --[[@as table]]
-    local query = string.format([[SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage`, iv.`impounded_at`
+    local query = [[
+    SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage`, iv.`impounded_at`
     FROM `owned_vehicles` AS ov
     LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id`
-    WHERE ov.`owner` = ? AND ov.`type` IN (%s) AND ov.`job` IS NULL]], ("'%s'"):format(table.concat(currentGarageTypes, "', '")))
+    WHERE ov.`owner` = ? AND ov.`job` IS NULL]]
     local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier() })
 
     return GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
@@ -42,13 +41,10 @@ lib.callback.register("esx_garage:getSocietyVehicles", function(source, garageKe
 
     if not next(currentGarageGroups) then return print(("[^1ERROR^7] Mulfunctioned data for garage (^5%s^7) as per Player (^5%s^7) request. Expected groups but received nothing!"):format(garageKey, xPlayer.source)) end
 
-    _type = type(Config.Garages[garageKey].Type)
-    local currentGarageTypes = _type == "string" and { Config.Garages[garageKey].Type } or _type == "table" and Config.Garages[garageKey].Type or {} --[[@as table]]
-
     local query = string.format([[SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage`, iv.`impounded_at`
     FROM `owned_vehicles` AS ov
     LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id`
-    WHERE (ov.`owner` = ? OR ov.`owner` = '' OR ov.`owner` IS NULL) AND ov.`type` IN (%s) AND ov.`job` IN (%s)]], ("'%s'"):format(table.concat(currentGarageTypes, "', '")), ("'%s'"):format(table.concat(currentGarageGroups, "', '")))
+    WHERE (ov.`owner` = ? OR ov.`owner` = '' OR ov.`owner` IS NULL) AND ov.`job` IN (%s)]], ("'%s'"):format(table.concat(currentGarageGroups, "', '")))
     local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier() })
 
     return GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
@@ -75,13 +71,12 @@ lib.callback.register("esx_garage:getImpoundedVehicles", function(source, impoun
 
     if not IsPlayerInImpoundZone(xPlayer.source, impoundKey) then return CheatDetected(xPlayer.source) end
 
-    local _type = type(Config.Impounds[impoundKey].Type)
-    local currentImpoundTypes = _type == "string" and { Config.Impounds[impoundKey].Type } or _type == "table" and Config.Impounds[impoundKey].Type or {} --[[@as table]]
-    local query = string.format([[SELECT ov.`id`, ov.`plate`, ov.`job`, ov.`model`, ov.`vehicle`, iv.`impounded_at`, iv.`release_fee`, CASE WHEN NOW() >= iv.`release_date` THEN 1 ELSE 0 END AS `is_release_date_passed`,
+    local query = [[
+    SELECT ov.`id`, ov.`plate`, ov.`job`, ov.`model`, ov.`vehicle`, iv.`impounded_at`, iv.`release_fee`, CASE WHEN NOW() >= iv.`release_date` THEN 1 ELSE 0 END AS `is_release_date_passed`,
     TIMESTAMPDIFF(SECOND, NOW(), iv.`release_date`) AS `release_date_second_until`
     FROM `owned_vehicles` AS `ov`
     LEFT JOIN `impounded_vehicles` AS `iv` ON ov.`id` = iv.`id`
-    WHERE (ov.`owner` = ? or ov.`owner` IS NULL or ov.`owner` = "") AND ov.`type` IN (%s) AND (ov.`stored` = 0 or ov.`stored` IS NULL)]], ("'%s'"):format(table.concat(currentImpoundTypes, "', '")))
+    WHERE (ov.`owner` = ? or ov.`owner` IS NULL or ov.`owner` = "") AND (ov.`stored` = 0 or ov.`stored` IS NULL)]]
     local dbResults = MySQL.rawExecute.await(query, { xPlayer.getIdentifier() })
 
     local vehicles, contextOptions, count = {}, {}, 0
@@ -90,12 +85,11 @@ lib.callback.register("esx_garage:getImpoundedVehicles", function(source, impoun
 
     for i = 1, #dbResults do
         local dbResult = dbResults[i]
+        dbResult.vehicle = json.decode(dbResult.vehicle)
 
         if not DoesPlayerHaveAccessToGroup(xPlayer, dbResult.job) then goto skipLoop end
 
-        dbResult.vehicle = json.decode(dbResult.vehicle)
-
-        if not dbResult.model and dbResult.vehicle?.model then -- probably just migrated from esx-legacy therefore dbResult.model is empty...
+        if (not dbResult.model or dbResult.model == "") and dbResult.vehicle?.model then -- probably just migrated from esx-legacy therefore dbResult.model is empty...
             for vModel, vData in pairs(ESX.GetVehicleData()) do
                 if vData.hash == dbResult.vehicle.model then
                     dbResult.model = vModel
@@ -104,8 +98,14 @@ lib.callback.register("esx_garage:getImpoundedVehicles", function(source, impoun
             end
         end
 
-        if not dbResult.model then
-            print(("[^3WARNING^7] Vehicle hash (^1%s^7) for ID (^5%s^7) is invalid \nEnsure vehicle exists in ^2'@es_extended/files/vehicles.json'^7"):format(dbResult.vehicle?.model, dbResult.id))
+        if (not dbResult.model or dbResult.model == "") then
+            ESX.Trace(("Vehicle hash (^1%s^7) for Vehicle ID (^5%s^7) from database is invalid \nEnsure vehicle exists in ^2'@es_extended/files/vehicles.json'^7"):format(dbResult.vehicle?.model, dbResult.id), "warning", true)
+            goto skipLoop
+        end
+
+        local modelData = ESX.GetVehicleData(dbResult.model)
+
+        if not DoesZoneAcceptVehicleType("impound", impoundKey, modelData?.type) then
             goto skipLoop
         end
 
@@ -135,9 +135,7 @@ lib.callback.register("esx_garage:getImpoundedVehicles", function(source, impoun
             stored = false
         }
 
-        local modelData = ESX.GetVehicleData(dbResult.model)
         local vehicleName = ("%s %s"):format(modelData.make, modelData.name)
-
         local contextDescription = ("Plate: %s"):format(dbResult.plate)
         local contextMetadata = {
             { label = "Status", value = dbResult.impounded_at and (not canReleaseVehicle and ("Can be released in %s"):format(GetTimeStringFromSecond(dbResult.release_date_second_until)) or "Can be released now") or "Out" }

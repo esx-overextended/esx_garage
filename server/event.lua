@@ -41,7 +41,8 @@ RegisterServerEvent("esx_garage:takeOutOwnedVehicle", function(data)
 
     if not xVehicle then return end
 
-    xPlayer.showNotification("Vehicle spawned!", "success")
+    local modelData = ESX.GetVehicleData(xVehicle.model)
+    xPlayer.showNotification(("Spawned %s!"):format(("%s %s"):format(modelData.make, modelData.name)), "success")
 
     vehicleData.vehicle = vehicleData.vehicle and json.decode(vehicleData.vehicle)
 
@@ -88,27 +89,21 @@ RegisterServerEvent("esx_garage:storeOwnedVehicle", function(data)
         if not canStoreVehicleHere then return xPlayer.showNotification("You cannot store this vehicle here in this garage!", "error") end
     end
 
-    if currentGarage.Type then
-        local canStoreVehicleHere = false
-        local currentVehicleType = GetBackwardCompatibleVehicleType(ESX.GetVehicleData(xVehicle.model)?.type)
+    local modelData = ESX.GetVehicleData(xVehicle.model)
 
-        for i = 1, #currentGarage.Type do
-            if currentVehicleType == currentGarage.Type[i] then
-                canStoreVehicleHere = true
-                break
-            end
-        end
-
-        if not canStoreVehicleHere then return xPlayer.showNotification("You cannot store this type of vehicle here in this garage!", "error") end
+    if not DoesZoneAcceptVehicleType("garage", data.garageKey, modelData?.type) then
+        return xPlayer.showNotification("You cannot store this type of vehicle here in this garage!", "error")
     end
 
     if not IsCoordsInGarageZone(xVehicle.getCoords(true), data.garageKey) or not IsPlayerAuthorizedToAccessGarage(xPlayer, data.garageKey) or GetEntityModel(entity) ~= data.properties?.model then return CheatDetected(xPlayer.source) end
+
+    ESX.OneSync.MakeVehicleEmptyOfPassengers(entity)
 
     xVehicle.setStored(true, true)
 
     MySQL.update.await("UPDATE `owned_vehicles` SET `vehicle` = ?, `garage` = ? WHERE `id` = ?", { json.encode(data.properties), data.garageKey, xVehicle.id })
 
-    xPlayer.showNotification("Vehicle stored!", "success")
+    xPlayer.showNotification(("Stored %s!"):format(("%s %s"):format(modelData.make, modelData.name)), "success")
 end)
 
 RegisterServerEvent("esx_garage:removeVehicleFromImpound", function(data)
@@ -118,12 +113,11 @@ RegisterServerEvent("esx_garage:removeVehicleFromImpound", function(data)
 
     if not IsPlayerInImpoundZone(xPlayer.source, data.impoundKey) then return CheatDetected(xPlayer.source) end
 
-    local _type = type(Config.Impounds[data.impoundKey].Type)
-    local currentImpoundTypes = _type == "string" and { Config.Impounds[data.impoundKey]?.Type } or _type == "table" and Config.Impounds[data.impoundKey]?.Type or {} --[[@as table]]
-    local query = string.format([[SELECT ov.`owner`, ov.`plate`, ov.`job`, iv.`release_fee`
+    local query = [[
+    SELECT ov.`owner`, ov.`plate`, ov.`job`, iv.`release_fee`
     FROM `owned_vehicles` AS `ov`
     LEFT JOIN `impounded_vehicles` AS `iv` ON ov.`id` = iv.`id`
-    WHERE ov.`id` = ? AND ov.`type` IN (%s) AND (ov.`stored` = 0 or ov.`stored` IS NULL) AND (iv.`release_date` IS NULL OR NOW() >= iv.`release_date`)]], ("'%s'"):format(table.concat(currentImpoundTypes, "', '")))
+    WHERE ov.`id` = ? AND (ov.`stored` = 0 or ov.`stored` IS NULL) AND (iv.`release_date` IS NULL OR NOW() >= iv.`release_date`)]]
     local vehicleData = MySQL.single.await(query, { data.vehicleId })
 
     if not vehicleData or (vehicleData.owner ~= xPlayer.getIdentifier() and not DoesPlayerHaveAccessToGroup(xPlayer, vehicleData.job)) or (vehicleData.release_fee and xPlayer.getAccount(data.account)?.money < vehicleData.release_fee) then
@@ -141,7 +135,7 @@ RegisterServerEvent("esx_garage:removeVehicleFromImpound", function(data)
         local spawnCoords = Config.Impounds[data.impoundKey].Spawns[data.spawnIndex]
 
         if spawnCoords and ESX.CreateVehicle(data.vehicleId, spawnCoords, spawnCoords?.w, true) then
-            xPlayer.showNotification("Vehicle spawned!", "success")
+            xPlayer.showNotification(("Spawned %s!"):format(data.vehicleName), "success")
         end
     else
         xPlayer.showNotification(("Vehicle %s (%s) transferred to %s!"):format(data.vehicleName, vehicleData.plate, Config.Garages[data.garage]?.Label), "success")

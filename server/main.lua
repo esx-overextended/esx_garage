@@ -46,6 +46,40 @@ MySQL.ready(function()
     end
 end)
 
+---@param zoneType string
+---@param zoneKey string
+---@param vehicleType string
+---@return boolean
+function DoesZoneAcceptVehicleType(zoneType, zoneKey, vehicleType)
+    local zoneData
+
+    if zoneType == "garage" then
+        zoneData = Config.Garages[zoneKey]
+    elseif zoneType == "impound" then
+        zoneData = Config.Impounds[zoneKey]
+    end
+
+    if not zoneData or type(vehicleType) ~= "string" then return false end
+
+    local zoneAcceptedType = zoneData.Type
+
+    if not zoneAcceptedType then return true end -- means this zone does not have a specific type, therefore all vehicles type are accepted
+
+    local _type = type(zoneAcceptedType)
+
+    if _type == "string" and zoneAcceptedType == vehicleType then
+        return true
+    elseif _type == "table" and table.type(zoneAcceptedType) == "array" then
+        for i = 1, #zoneAcceptedType do
+            if zoneAcceptedType[i] == vehicleType then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
 ---@param dbResults table
 ---@param garageKey string
 ---@return table, table
@@ -57,7 +91,7 @@ function GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
             local dbResult = dbResults[i]
             dbResult.vehicle = json.decode(dbResult.vehicle)
 
-            if not dbResult.model and dbResult.vehicle?.model then -- probably just migrated from esx-legacy therefore dbResult.model is empty...
+            if (not dbResult.model or dbResult.model == "") and dbResult.vehicle?.model then -- probably just migrated from esx-legacy therefore dbResult.model is empty...
                 for vModel, vData in pairs(ESX.GetVehicleData()) do
                     if vData.hash == dbResult.vehicle.model then
                         dbResult.model = vModel
@@ -66,8 +100,14 @@ function GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
                 end
             end
 
-            if not dbResult.model then
-                print(("[^3WARNING^7] Vehicle hash (^1%s^7) for ID (^5%s^7) is invalid \nEnsure vehicle exists in ^2'@es_extended/files/vehicles.json'^7"):format(dbResult.vehicle?.model, dbResult.id))
+            if (not dbResult.model or dbResult.model == "") then
+                ESX.Trace(("Vehicle hash (^1%s^7) for Vehicle ID (^5%s^7) from database is invalid \nEnsure vehicle exists in ^2'@es_extended/files/vehicles.json'^7"):format(dbResult.vehicle?.model, dbResult.id), "warning", true)
+                goto skipLoop
+            end
+
+            local modelData = ESX.GetVehicleData(dbResult.model)
+
+            if not DoesZoneAcceptVehicleType("garage", garageKey, modelData?.type) then
                 goto skipLoop
             end
 
@@ -80,9 +120,7 @@ function GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
                 garage = dbResult.garage
             }
 
-            local modelData = ESX.GetVehicleData(dbResult.model)
             local vehicleName = ("%s %s"):format(modelData.make, modelData.name)
-
             local contextDescription = ("Plate: %s"):format(dbResult.plate)
             local contextMetadata = {
                 { label = "Status", value = vehicles[count].stored and ("Stored in %s"):format(dbResult.garage == garageKey and "Here" or Config.Garages[dbResult.garage]?.Label) or "Out" }
@@ -225,19 +263,6 @@ function GetIconForVehicleModel(vehicleModel, modelType)
     return "fa-solid fa-car" -- default icon
 end
 
----Gets a vehicle type based on esx-legacy (used in DB column to keep backward-compatibility)
----@param vehicleType string
----@return string
-function GetBackwardCompatibleVehicleType(vehicleType)
-    if vehicleType == "automobile" then
-        return "car"
-    elseif vehicleType == "quadbike" then
-        return "bike"
-    end
-
-    return vehicleType
-end
-
 ---@class CImpoundData
 ---@field entity number
 ---@field reason? string
@@ -270,34 +295,3 @@ function ImpoundVehicle(data)
 end
 
 exports("ImpoundVehicle", ImpoundVehicle)
-
--- This will be modified or even moved to another resource for a more complex functionality in future
-ESX.RegisterCommand("assignvehicle", "admin", function(xPlayer, args, showError)
-    local vehicleEntity = GetVehiclePedIsIn(GetPlayerPed(source), false)
-
-    if vehicleEntity ~= 0 then
-        local xVehicle = ESX.GetVehicle(vehicleEntity)
-
-        if not xVehicle or xVehicle?.group --[[to make sure not to override the current vehicle's group]] then
-            return xPlayer.showNotification("This vehicle cannot be assigned to the specified group/job. Get out of it and spawn a new vehicle!", "error")
-        end
-
-        xVehicle.setGroup(args.group)
-    else
-        local coords = xPlayer.getCoords()
-
-        if not ESX.CreateVehicle({
-            model = args.vehicle,
-            group = args.group,
-        }, coords, coords.heading) then return xPlayer.showNotification("The specified vehicle could not be generated!", "error") end
-    end
-
-    xPlayer.showNotification("The vehicle is successfully assigned to the specified group!", "success")
-end, false, {
-    help = "Admins way of assigning a vehicle to a group/job",
-    validate = false,
-    arguments = {
-        { name = "group",      help = "name of the group/job that the vehicle should be assigned to",                   type = "string" },
-        { name = "vehicle",    help = "vehicle name/model to assign (only if you are not already inside a vehicle)",    type = "string" }
-    }
-})

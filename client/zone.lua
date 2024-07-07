@@ -5,7 +5,7 @@ local function createBlip(data)
 
     if not zoneData or not zoneData.Blip or not zoneData.Blip.Active then return end
 
-    local blipCoords = zoneData.Coords or data.coords -- getting the blip coords from polyzone's centroid if not specifically indicated...
+    local blipCoords = zoneData.Blip.Coords or data.coords -- getting the blip coords from polyzone's centroid if not specifically indicated...
     local blipName = ("%s_%s"):format(data.garageKey and "garage" or data.impoundKey and "impound", data.garageKey or data.impoundKey)
     local blip = AddBlipForCoord(blipCoords.x, blipCoords.y, blipCoords.z)
 
@@ -187,7 +187,7 @@ local function setupImpound(impoundKey)
 end
 
 -- initializing
-SetTimeout(1000, function()
+do
     for key in pairs(Config.Garages) do
         setupGarage(key)
     end
@@ -195,7 +195,7 @@ SetTimeout(1000, function()
     for key in pairs(Config.Impounds) do
         setupImpound(key)
     end
-end)
+end
 
 ---@param garageKey string
 ---@return boolean
