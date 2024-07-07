@@ -18,7 +18,7 @@ local function setupImpound(impoundKey)
     impoundZones[impoundKey] = polyZone
 end
 
-SetTimeout(1000, function()
+do
     for key in pairs(Config.Garages) do
         setupGarage(key)
     end
@@ -26,7 +26,7 @@ SetTimeout(1000, function()
     for key in pairs(Config.Impounds) do
         setupImpound(key)
     end
-end)
+end
 
 ---@param source number
 ---@param garageKey string

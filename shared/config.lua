@@ -1,6 +1,6 @@
 Config = {}
 
-Config.Debug = true
+Config.Debug = false
 
 Config.DefaultPed = `s_m_y_airworker`
 
@@ -17,7 +17,7 @@ Config.NotifyOnZoneInteraction = true
 Config.Garages = {
     ["legion"] = {
         Label = "Legion Garage",
-        Type = { "automobile", "bike", "quadbike", "trailer" },
+        Type = { "automobile", "bike", "quadbike", "bicycle", "trailer" },
         RadialMenu = nil,              -- Can override Config.RadialMenu for this specific garage
         NotifyOnZoneInteraction = nil, -- Can override Config.NotifyOnZoneInteraction for this specific garage
         Blip = {
@@ -130,7 +130,7 @@ Config.Garages = {
     },
     ["paleto"] = {
         Label = "Paleto Bay Garage",
-        Type = { "automobile", "bike", "quadbike", "trailer" },
+        Type = { "automobile", "bike", "quadbike", "bicycle", "trailer" },
         RadialMenu = nil,              -- Can override Config.RadialMenu for this specific garage
         NotifyOnZoneInteraction = nil, -- Can override Config.NotifyOnZoneInteraction for this specific garage
         Blip = {
@@ -242,9 +242,36 @@ Config.Garages = {
             vector4(-829.8182, -1405.9231, 0.1022, 109.8358)
         }
     },
+    ["pegasus_aircraft"] = {
+        Label = "Pegasus Aircraft Hangar",
+        Type = { "plane" },
+        RadialMenu = nil,              -- Can override Config.RadialMenu for this specific garage
+        NotifyOnZoneInteraction = nil, -- Can override Config.NotifyOnZoneInteraction for this specific garage
+        Blip = {
+            Active = true,
+            Coords = nil, -- Can set specific coords for blip, otherwise the center of the polyzone points will be picked
+            Type = 359,
+            Size = 1.0,
+            Color = 2
+        },
+        Peds = {
+            { Model = `S_M_Y_DWService_01`, Coords = vector4(-1622.0303, -3153.8115, 12.9918, 61.2203) },
+            { Model = `S_M_Y_DWService_01`, Coords = vector4(-1663.6180, -3109.8350, 12.9915, 253.4422) }
+        },
+        Thickness = 18,
+        Points = {
+            vector3(-1672.5619, -3103.8293, 20.0),
+            vector3(-1703.4747, -3157.9619, 20.0),
+            vector3(-1646.0308, -3190.8403, 20.0),
+            vector3(-1607.4240, -3141.4333, 20.0)
+        },
+        Spawns = {
+            vector4(-1651.0536, -3140.7959, 15.7217, 329.9271)
+        }
+    },
     ["mrpd_car"] = {
         Label = "MRPD Garage",
-        Type = { "automobile", "bike", "quadbike" },
+        Type = { "automobile", "bike", "quadbike", "bicycle" },
         RadialMenu = nil,              -- Can override Config.RadialMenu for this specific garage
         NotifyOnZoneInteraction = nil, -- Can override Config.NotifyOnZoneInteraction for this specific garage
         Groups = { "police" },
@@ -336,7 +363,7 @@ Config.Garages = {
 Config.Impounds = {
     ["city_impound"] = {
         Label = "City Vehicle Impound Lot",
-        Type = { "automobile", "bike", "quadbike", "trailer" },
+        Type = { "automobile", "bike", "quadbike", "bicycle", "trailer" },
         NotifyOnZoneInteraction = nil, -- Can override Config.NotifyOnZoneInteraction for this specific impound
         Blip = {
             Active = true,
@@ -424,6 +451,32 @@ Config.Impounds = {
             vector4(23.0546, -2817.4324, 0.0245, 176.9383),
             vector4(28.1134, -2808.2424, 0.1820, 182.9800),
             vector4(7.5267, -2796.7776, 0.6317, 181.8649)
+        }
+    },
+    ["aircraft_impound"] = {
+        Label = "City Aircraft Impound Hangar",
+        Type = { "plane" },
+        NotifyOnZoneInteraction = nil, -- Can override Config.NotifyOnZoneInteraction for this specific impound
+        Blip = {
+            Active = true,
+            Type = 359,
+            Size = 0.8,
+            Color = 1
+        },
+        Peds = {
+            { Model = nil, Coords = vector4(-930.2547, -2995.2388, 18.8454, 278.8011) }
+        },
+        Thickness = 24,
+        Points = {
+            vector3(-1030.5398, -3016.4602, 22.0),
+            vector3(-936.0699, -3070.9485, 22.0),
+            vector3(-886.6230, -2984.5852, 22.0),
+            vector3(-899.7206, -2976.4343, 22.0),
+            vector3(-889.2856, -2958.1514, 22.0),
+            vector3(-970.2786, -2911.2922, 22.0)
+        },
+        Spawns = {
+            vector4(-985.3212, -2993.0466, 15.6751, 60.1019)
         }
     }
 }
