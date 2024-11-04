@@ -164,7 +164,6 @@ lib.callback.register("esx_garage:getImpoundedVehicles", function(source, impoun
 end)
 
 lib.callback.register("esx_garage:getGaragesThatAcceptVehicleType", function(_, vehicleType)
-    ESX.Trace(vehicleType, nil, true)
     local garages = {}
 
     for garageKey in pairs(Config.Garages) do
