@@ -152,7 +152,7 @@ lib.callback.register("esx_garage:getImpoundedVehicles", function(source, impoun
             iconColor = not canReleaseVehicle and "red" or not canGetVehicle and "yellow" or "green",
             arrow = canReleaseVehicle and canGetVehicle,
             event = canReleaseVehicle and canGetVehicle and "esx_garage:openImpoundConfirmation",
-            args = { vehicleName = vehicleName, vehicleId = dbResult.id, plate = dbResult.plate, impoundKey = impoundKey, releaseFee = dbResult.release_fee or Config.ImpoundPrice },
+            args = { vehicleName = vehicleName, vehicleType = modelData.type, vehicleId = dbResult.id, plate = dbResult.plate, impoundKey = impoundKey, releaseFee = dbResult.release_fee or Config.ImpoundPrice },
             metadata = contextMetadata,
             image = modelData.image
         }
@@ -161,4 +161,15 @@ lib.callback.register("esx_garage:getImpoundedVehicles", function(source, impoun
     end
 
     return vehicles, contextOptions
+end)
+
+lib.callback.register("esx_garage:getGaragesThatAcceptVehicleType", function(_, vehicleType)
+    ESX.Trace(vehicleType, nil, true)
+    local garages = {}
+
+    for garageKey in pairs(Config.Garages) do
+        garages[garageKey] = DoesZoneAcceptVehicleType("garage", garageKey, vehicleType)
+    end
+
+    return garages
 end)

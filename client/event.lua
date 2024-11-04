@@ -141,8 +141,10 @@ AddEventHandler("esx_garage:openImpoundConfirmation", function(data)
                     { label = "Spawn vehicle & don't transfer it...", value = nil }
                 }
 
+                local validGarages = lib.callback.await("esx_garage:getGaragesThatAcceptVehicleType", false, data.vehicleType)
+
                 for garageKey, garageData in pairs(Config.Garages) do
-                    if IsPlayerAuthorizedToAccessGarage(garageKey) then
+                    if validGarages[garageKey] and IsPlayerAuthorizedToAccessGarage(garageKey) then
                         inputDialogOptions[#inputDialogOptions + 1] = { label = garageData.Label, value = garageKey }
                     end
                 end
