@@ -57,7 +57,7 @@ function zone.configurePed(action, data)
             local pedModel = ped.Model or Config.DefaultPed --[[@as number | string]]
             pedModel = type(pedModel) == "string" and joaat(pedModel) or pedModel --[[@as number]]
 
-            lib.requestModel(pedModel, 1000)
+            lib.requestModel(pedModel, 10000)
 
             local pedEntity = CreatePed(0, pedModel, ped.Coords.x, ped.Coords.y, ped.Coords.z, ped.Coords.w, false, true)
 
