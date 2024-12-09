@@ -299,7 +299,6 @@ end
 exports("ImpoundVehicle", ImpoundVehicle)
 
 exports["es_extended"]:registerHook("onVehicleCreate", function(payload)
-    print("HERE")
     local xVehicle = payload?.xVehicle
 
     if not xVehicle then
@@ -309,9 +308,7 @@ exports["es_extended"]:registerHook("onVehicleCreate", function(payload)
     local properties = xVehicle.properties
     local shouldUpdateProperties = false
 
-    ESX.Trace(json.encode(properties, { indent = true }), "trace", true)
-
-    -- make vehicle drivable if it's been exploded
+    -- make vehicle enterable if it's been exploded
     if properties.bodyHealth and properties.bodyHealth <= 0 then
         properties.bodyHealth = 1
         shouldUpdateProperties = true
