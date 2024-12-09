@@ -210,7 +210,9 @@ function IsCoordsAvailableToSpawn(coords, range)
     return count == 0
 end
 
-function ApplyFuelToVehicle(vehicleEntity, fuelAmount)
+---@param vehicleEntity number
+---@param fuelAmount? number
+local function applyFuelToVehicle(vehicleEntity, fuelAmount)
     if not vehicleEntity or not fuelAmount then return end
 
     if GetResourceState("ox_fuel"):find("start") then
@@ -295,3 +297,39 @@ function ImpoundVehicle(data)
 end
 
 exports("ImpoundVehicle", ImpoundVehicle)
+
+exports["es_extended"]:registerHook("onVehicleCreate", function(payload)
+    print("HERE")
+    local xVehicle = payload?.xVehicle
+
+    if not xVehicle then
+        return ESX.Trace("Unexpected behavior from onVehicleCreate hook. No vehicle object is received!", "error", true)
+    end
+
+    local properties = xVehicle.properties
+    local shouldUpdateProperties = false
+
+    ESX.Trace(json.encode(properties, { indent = true }), "trace", true)
+
+    -- make vehicle drivable if it's been exploded
+    if properties.bodyHealth and properties.bodyHealth <= 0 then
+        properties.bodyHealth = 1
+        shouldUpdateProperties = true
+    end
+
+    if properties.engineHealth and properties.engineHealth <= 0 then
+        properties.engineHealth = 1
+        shouldUpdateProperties = true
+    end
+
+    if properties.tankHealth and properties.tankHealth <= 0 then
+        properties.tankHealth = 1
+        shouldUpdateProperties = true
+    end
+
+    if shouldUpdateProperties then
+        xVehicle.setField("properties", properties)
+    end
+
+    applyFuelToVehicle(xVehicle.entity, properties.fuelLevel)
+end)

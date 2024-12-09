@@ -42,11 +42,8 @@ RegisterServerEvent("esx_garage:takeOutOwnedVehicle", function(data)
     if not xVehicle then return end
 
     local modelData = ESX.GetVehicleData(xVehicle.model)
+
     xPlayer.showNotification(("Spawned %s!"):format(("%s %s"):format(modelData.make, modelData.name)), "success")
-
-    vehicleData.vehicle = vehicleData.vehicle and json.decode(vehicleData.vehicle)
-
-    ApplyFuelToVehicle(xVehicle.entity, vehicleData.vehicle?.fuelLevel)
 end)
 
 RegisterServerEvent("esx_garage:storeOwnedVehicle", function(data)
