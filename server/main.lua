@@ -305,6 +305,8 @@ exports["es_extended"]:registerHook("onVehicleCreate", function(payload)
         return ESX.Trace("Unexpected behavior from onVehicleCreate hook. No vehicle object is received!", "error", true)
     end
 
+    if xVehicle.script ~= cache.resource then return end -- do not change behaviour if vehicle is spawned by another resource
+
     local properties = xVehicle.properties
     local shouldUpdateProperties = false
 
