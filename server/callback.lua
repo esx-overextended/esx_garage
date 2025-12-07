@@ -6,7 +6,7 @@ lib.callback.register("esx_garage:getOwnedVehicles", function(source, garageKey)
     if not IsPlayerInGarageZone(xPlayer.source, garageKey) or not IsPlayerAuthorizedToAccessGarage(xPlayer, garageKey) then return CheatDetected(xPlayer.source) end
 
     local query = [[
-    SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage`, iv.`impounded_at`
+    SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`metadata`, ov.`garage`, iv.`impounded_at`
     FROM `owned_vehicles` AS ov
     LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id`
     WHERE ov.`owner` = ? AND ov.`job` IS NULL]]
@@ -41,7 +41,7 @@ lib.callback.register("esx_garage:getSocietyVehicles", function(source, garageKe
 
     if not next(currentGarageGroups) then return print(("[^1ERROR^7] Mulfunctioned data for garage (^5%s^7) as per Player (^5%s^7) request. Expected groups but received nothing!"):format(garageKey, xPlayer.source)) end
 
-    local query = string.format([[SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`garage`, iv.`impounded_at`
+    local query = string.format([[SELECT ov.`id`, ov.`plate`, ov.`vehicle`, ov.`model`, ov.`stored`, ov.`metadata`, ov.`garage`, iv.`impounded_at`
     FROM `owned_vehicles` AS ov
     LEFT JOIN `impounded_vehicles` AS iv ON ov.`id` = iv.`id`
     WHERE (ov.`owner` = ? OR ov.`owner` = '' OR ov.`owner` IS NULL) AND ov.`job` IN (%s)]], ("'%s'"):format(table.concat(currentGarageGroups, "', '")))
@@ -72,7 +72,7 @@ lib.callback.register("esx_garage:getImpoundedVehicles", function(source, impoun
     if not IsPlayerInImpoundZone(xPlayer.source, impoundKey) then return CheatDetected(xPlayer.source) end
 
     local query = [[
-    SELECT ov.`id`, ov.`plate`, ov.`job`, ov.`model`, ov.`vehicle`, iv.`impounded_at`, iv.`release_fee`, CASE WHEN NOW() >= iv.`release_date` THEN 1 ELSE 0 END AS `is_release_date_passed`,
+    SELECT ov.`id`, ov.`plate`, ov.`job`, ov.`model`, ov.`vehicle`, ov.`metadata`, iv.`impounded_at`, iv.`release_fee`, CASE WHEN NOW() >= iv.`release_date` THEN 1 ELSE 0 END AS `is_release_date_passed`,
     TIMESTAMPDIFF(SECOND, NOW(), iv.`release_date`) AS `release_date_second_until`
     FROM `owned_vehicles` AS `ov`
     LEFT JOIN `impounded_vehicles` AS `iv` ON ov.`id` = iv.`id`
@@ -86,6 +86,7 @@ lib.callback.register("esx_garage:getImpoundedVehicles", function(source, impoun
     for i = 1, #dbResults do
         local dbResult = dbResults[i]
         dbResult.vehicle = json.decode(dbResult.vehicle)
+        dbResult.metadata = json.decode(dbResult.metadata)
 
         if not DoesPlayerHaveAccessToGroup(xPlayer, dbResult.job) then goto skipLoop end
 
@@ -154,7 +155,7 @@ lib.callback.register("esx_garage:getImpoundedVehicles", function(source, impoun
             event = canReleaseVehicle and canGetVehicle and "esx_garage:openImpoundConfirmation",
             args = { vehicleName = vehicleName, vehicleType = modelData.type, vehicleId = dbResult.id, plate = dbResult.plate, impoundKey = impoundKey, releaseFee = dbResult.release_fee or Config.ImpoundPrice },
             metadata = contextMetadata,
-            image = modelData.image
+            image = dbResult.metadata.image or modelData.image
         }
 
         ::skipLoop::

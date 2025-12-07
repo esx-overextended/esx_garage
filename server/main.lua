@@ -90,6 +90,7 @@ function GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
         for i = 1, #dbResults do
             local dbResult = dbResults[i]
             dbResult.vehicle = json.decode(dbResult.vehicle)
+            dbResult.metadata = json.decode(dbResult.metadata)
 
             if (not dbResult.model or dbResult.model == "") and dbResult.vehicle?.model then -- probably just migrated from esx-legacy therefore dbResult.model is empty...
                 for vModel, vData in pairs(ESX.GetVehicleData()) do
@@ -161,7 +162,7 @@ function GenerateVehicleDataAndContextFromQueryResult(dbResults, garageKey)
                 event = vehicles[count].stored and "esx_garage:openVehicleMenu",
                 args = { vehicleName = vehicleName, vehicleId = dbResult.id, plate = dbResult.plate, storedGarage = dbResult.garage, garageKey = garageKey },
                 metadata = contextMetadata,
-                image = modelData.image
+                image = dbResult.metadata.image or modelData.image
             }
 
             ::skipLoop::
@@ -328,6 +329,10 @@ exports["es_extended"]:registerHook("onVehicleCreate", function(payload)
 
     if shouldUpdateProperties then
         xVehicle.setField("properties", properties)
+    end
+
+    if not xVehicle.metadata.image then
+        xVehicle.setMetadata("image", ESX.GetVehicleData(xVehicle.model).image)
     end
 
     applyFuelToVehicle(xVehicle.entity, properties.fuelLevel)
