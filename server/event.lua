@@ -94,8 +94,8 @@ RegisterServerEvent("esx_garage:storeOwnedVehicle", function(data)
 
     if not IsCoordsInGarageZone(xVehicle.getCoords(true), data.garageKey) or not IsPlayerAuthorizedToAccessGarage(xPlayer, data.garageKey) or GetEntityModel(entity) ~= data.properties?.model then return CheatDetected(xPlayer.source) end
 
-    SetTimeout(0, function() ESX.OneSync.MakeVehicleEmptyOfPassengers(entity) end)
     xVehicle.setMetadata("image", lib.callback.await("esx_garage:getVehicleImage", xPlayer.source, xVehicle.netId))
+    ESX.OneSync.MakeVehicleEmptyOfPassengers(entity)
 
     xVehicle.setStored(true, true)
 
